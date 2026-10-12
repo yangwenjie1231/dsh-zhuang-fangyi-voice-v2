@@ -1,0 +1,23 @@
+# 模型与缓存（从 Release 下载，不入库）
+models/
+cache/
+out/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+
+# 临时文件
+*.part
+_aux.zip
+
+# 英文 G2P 运行时生成的词典缓存（会写进 vendor 目录）
+src/zfh_voice/_vendor/_gsv_text/*_cache.pickle
+

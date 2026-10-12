@@ -1,0 +1,53 @@
+# 更新日志
+
+## 0.2.0
+
+**主题：三种语气风格 + 路径自动探测 + API 版本化 + ONNX 优化**
+
+### 新增
+
+- **三种音色风格**（同一音色，不同语气）：
+  | 风格 | 听感 | 客观特征 |
+  |---|---|---|
+  | `normal` | 正常说话（**默认，与 0.1.0 一致**） | F0 尾部 +1.89 |
+  | `firm` | 语气强硬 | F0 尾部 −4.13，说话人相似度最高 |
+  | `gentle` | 语音娇 | F0 尾部 −4.86，500–800Hz 最干净 |
+
+  三种均经**盲听确认可用**，区别在语气而非质量。
+
+  - CLI：`python -m zfh_voice --style firm say "你好"`
+  - HTTP：`POST /tts {"text":"...","style":"firm"}`
+  - 服务：`ctx.get('zfhVoice').synthesize(text, 'firm')`
+  - 新子命令：`python -m zfh_voice styles`
+  - 新脚本：`python tools/install_styles.py`（把风格装进模型目录）
+
+- **路径自动探测**：`modelDir` 留空时会自动扫描
+  `<仓库上两级>/zfh-models*`（优先 `v2pro`），
+  无需在 DSH patch 里手写绝对路径。
+
+- **HTTP API 版本化**：
+  - `/v1/*` 与无前缀路径**完全等价**（旧客户端无感）
+  - `/v2/*` 返回增强字段（`api_version` / `styles` / `style`）
+  - 新端点：`GET /styles`、`GET /ref`、`POST /style`
+
+- **ONNX 后端优化**：`doctor` 与 `status` 现在会检查 v2Pro 的说话人编码器。
+
+### 兼容性（**硬承诺**）
+
+- `ctx.get('zfhVoice')` 的 11 个方法**签名与返回结构不变**
+- HTTP 的 `/health`、`/tts`、`/unload`、`/voices` **原样保留**
+- `cordis.patch.yml` 的原有 config 字段**全部继续可用**
+- CLI 的原有 8 个子命令**继续可用**
+- **默认风格是 `normal`，其参考音频就是 0.1.0 的 `ref/default.wav`**
+  → 不指定风格时，输出与 0.1.0 一致
+
+### 修复
+
+- 修一个依赖外部状态的插件测试（会随环境随机失败）
+
+---
+
+## 0.1.0
+
+首个版本。托管 Python 推理服务的生命周期（起停 / 常驻 / 显存释放），
+并通过 `zfhVoice` 服务把合成能力暴露给其它插件。

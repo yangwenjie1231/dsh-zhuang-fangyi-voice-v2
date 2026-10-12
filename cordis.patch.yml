@@ -1,0 +1,41 @@
+# dsh-zhuang-fangyi-voice bundle patch: registers the plugin row so the package
+# appears in the Loader entries.
+#
+# 注册成一个独立条目 `zhuang-fangyi-voice`：
+#   · 与桌宠 `dsh-zhuang-fangyi-pet` 是**两个独立插件** —— 语音不依赖桌宠，
+#     桌宠也不依赖语音（没装语音插件时桌宠退回固定台词）；
+#   · 启用后它会把 `zfhVoice` 服务挂到宿主上，桌宠通过 `ctx.get('zfhVoice')`
+#     拿到"把一句话合成成语音"的能力。
+- insert:
+    - id: zhuang-fangyi-voice
+      name: 'dsh-zhuang-fangyi-voice'
+      config:
+        # 全部留空 = 自动：后端用子插件默认，python 从 PATH / .venv 找，
+        # 仓库目录就是本插件自己的目录（插件知道自己装在哪，不需要绝对路径）。
+        backend: auto
+        # ---------- v0.2.0 新增：音色风格 ----------
+        # 三种语气风格（同一音色，不同语气）：
+        #   normal  正常说话（默认，与 v0.1.0 行为一致）
+        #   firm    语气强硬
+        #   gentle  语音娇
+        # 留空 = normal。桌宠设置页可实时切换。
+        style: normal
+        # 常驻策略（桌宠设置页会实时改它，不必改这里）：
+        #   resident=false   空闲后释放显存
+        #   idleStopSec=300  空闲 5 分钟后触发
+        #   idleAction=stop  释放方式：stop=杀进程（全释放、恢复慢）
+        #                    unload=只卸模型、留进程（显存同样释放、恢复快）
+        resident: false
+        idleStopSec: 300
+        idleAction: stop
+        # ---------- v0.2.0：路径可留空（自动探测）----------
+        # modelDir 留空时按以下顺序找：
+        #   1) ZFH_MODEL_DIR 环境变量
+        #   2) <仓库>/models
+        #   3) ~/.cache/zfh-voice/models
+        #   4) **自动探测** <仓库上两级>/zfh-models*（v2 新增）
+        #      例：D:\A\dsh-...-voice-v2 会找到 D:\A\voiceclone\zfh-models-v2pro
+        # 想固定用某个目录时再显式填。
+        # modelDir: ''
+        # python: ''
+        # gsvRoot: ''

@@ -1,0 +1,98 @@
+{
+  "plugin": "dsh-zhuang-fangyi-voice",
+  "version_v1": "0.1.0",
+  "service_name": "zfhVoice",
+  "js_service": {
+    "synthesize": {
+      "sig": "async synthesize(text) -> object | null",
+      "returns": "{ ...wavInfo, backend } 或 null",
+      "never_throws": true,
+      "note": "自动 ensure 服务在跑；失败返回 null"
+    },
+    "health": {
+      "sig": "health() -> object | null",
+      "note": "不启动服务；服务没跑时返回 null"
+    },
+    "diagnose": {
+      "sig": "async diagnose() -> {ran, ok, report, failure, error, guidance}",
+      "note": "环境体检；探测失败返回 {ran:false}，不抛"
+    },
+    "status": {
+      "sig": "status() -> object",
+      "returns": "{...supervisor.status(), baseUrl, python, repoDir, backend_pref}"
+    },
+    "start": {
+      "sig": "start() -> Promise",
+      "note": "显式启动，等模型加载完"
+    },
+    "stop": {
+      "sig": "stop() -> Promise",
+      "note": "只停本插件起的服务"
+    },
+    "configure": {
+      "sig": "configure(patch) -> void",
+      "note": "宿主驱动配置"
+    },
+    "setIdleAction": {
+      "sig": "setIdleAction('stop'|'unload') -> status"
+    },
+    "setResident": {
+      "sig": "setResident(bool) -> status"
+    },
+    "unload": {
+      "sig": "unload() -> Promise",
+      "note": "卸模型留进程"
+    },
+    "ensure": {
+      "sig": "ensure() -> Promise<bool>"
+    }
+  },
+  "http": {
+    "GET /health": "-> {ok, backend, version, ...}",
+    "POST /tts": "-> WAV 字节（RIFF）",
+    "POST /unload": "-> 卸模型（显存释放，留进程）",
+    "GET /voices": "-> 音色列表"
+  },
+  "config_keys": [
+    "python",
+    "backend",
+    "gsvRoot",
+    "modelDir",
+    "repoDir",
+    "resident",
+    "idleStopSec",
+    "idleAction",
+    "host",
+    "port"
+  ],
+  "defaults": {
+    "backend": "auto",
+    "host": "127.0.0.1",
+    "port": 8765,
+    "resident": false,
+    "idleStopSec": 300,
+    "idleAction": "stop",
+    "python": "",
+    "gsvRoot": "",
+    "modelDir": "",
+    "repoDir": ""
+  },
+  "cli_subcommands": [
+    "say",
+    "batch",
+    "serve",
+    "doctor",
+    "status",
+    "cache",
+    "onnx",
+    "torch"
+  ],
+  "backends": [
+    "torch",
+    "onnx",
+    "auto"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}

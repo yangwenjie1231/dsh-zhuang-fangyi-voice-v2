@@ -1,0 +1,71 @@
+{
+  "plugin": "dsh-zhuang-fangyi-voice",
+  "version": "0.1.0",
+  "service_name": "zfhVoice",
+  "service_methods": [
+    "synthesize",
+    "health",
+    "status",
+    "start",
+    "stop",
+    "configure",
+    "setIdleAction",
+    "ensure"
+  ],
+  "http_endpoints_python": [
+    "/tts",
+    "/unload",
+    "/voices"
+  ],
+  "http_endpoints_js": [
+    "/health",
+    "/tts",
+    "/unload"
+  ],
+  "config_keys": [
+    "backend",
+    "idleAction",
+    "idleStopSec",
+    "resident"
+  ],
+  "defaults": {
+    "python": "''",
+    "repoDir": "''",
+    "backend": "'auto'",
+    "gsvRoot": "''",
+    "modelDir": "''",
+    "host": "'127.0.0.1'",
+    "port": "8765",
+    "resident": "false",
+    "idleStopSec": "DEFAULT_IDLE_STOP_SEC",
+    "idleAction": "DEFAULT_IDLE_ACTION",
+    "version": "typeof body.version === 'string' ? body.version : null"
+  },
+  "cli_subcommands": [
+    "say",
+    "batch",
+    "serve",
+    "doctor",
+    "status",
+    "cache",
+    "onnx",
+    "torch"
+  ],
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "src",
+    "tools",
+    "docs",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "note_service_methods": "unload 已移除：它在 createSupervisor({...}) 的参数里，不是 service 对象的方法（原提取脚本误判）。v1 与 v2 在该处行为完全一致。"
+}

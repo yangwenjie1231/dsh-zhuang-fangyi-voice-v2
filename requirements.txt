@@ -1,0 +1,31 @@
+# ---- 核心推理（ONNX 后端）----
+# Windows 上想用任意显卡（含核显）加速，把下一行换成 onnxruntime-directml
+onnxruntime>=1.17
+numpy>=1.24
+soundfile>=0.12
+soxr>=0.3
+
+# ---- 文本前端 ----
+transformers>=4.30          # 仅用于 BERT tokenizer（多音字模型需要）
+pypinyin>=0.49
+cn2an>=0.5.22
+jieba>=0.42                 # 分词（有 jieba_fast 时自动优先用 fast 版）
+opencc-python-reimplemented>=0.1.7   # 繁简转换，纯 Python 无编译依赖
+
+# ---- 中英混排（让英文用真英文发音念）----
+# 不装也能跑，但英文会被中文前端**静默删除**（不发音、不占时长、不报错）。
+# 装了之后 LangSegmenter 会按语言分段：英文段走 ARPAbet 音素，中文段走拼音。
+#
+# 所需数据已随包分发，**不需要联网下载**：
+#   · cmudict.rep / cmudict-fast.rep  在 _vendor/_gsv_text/（english.py 读）
+#   · averaged_perceptron_tagger_eng  在 _vendor/nltk_data/（由 frontend.prepare 设 NLTK_DATA）
+#   · lid.176.ftz（语言检测，916 KB）随 fast-langdetect 包分发
+nltk>=3.8
+g2p-en>=2.1.0
+wordsegment>=1.3.0
+fast-langdetect>=0.2
+split-lang>=0.3
+
+# ---- 可选：torch 后端（更快，需要 GPU 环境）----
+# torch>=2.7
+# torchaudio>=2.7
