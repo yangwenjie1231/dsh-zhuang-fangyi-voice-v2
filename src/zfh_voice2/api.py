@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """高层 API：统一入口 + 合成缓存
 
-    from zfh_voice import TTS
+    from zfh_voice2 import TTS
     tts = TTS()                       # 默认 onnx 后端
     r = tts.say("今天天气不错")        # 返回 SynthResult
     r.save("out.wav")
@@ -132,7 +132,7 @@ class TTS:
             extra = ""
             if backend != "onnx":
                 extra = ("\n（torch 后端同样需要参考音频；"
-                         "它来自 zfh-voice-aux.zip，不随 torch 权重一起下载）")
+                         "它来自 zfh-voice2-aux.zip，不随 torch 权重一起下载）")
             avail = [s["name"] for s in styles.list_styles(self.model_dir)]
             raise FileNotFoundError(
                 f"找不到默认参考音频（期望路径："

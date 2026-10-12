@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """后端工厂
 
-    from zfh_voice.backends import make_backend
+    from zfh_voice2.backends import make_backend
     bk = make_backend("onnx")                    # 便携
     bk = make_backend("torch", gsv_root=...)     # 快
 

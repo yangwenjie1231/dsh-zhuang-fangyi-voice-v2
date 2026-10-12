@@ -19,7 +19,7 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "src"))
 
-from zfh_voice import frontend, paths  # noqa: E402
+from zfh_voice2 import frontend, paths  # noqa: E402
 
 
 def _ready():
@@ -176,7 +176,7 @@ def test_auto_localize_passes_model_dir(monkeypatch):
 
     用假 TTS 对象直接验参数传递 —— 不依赖本机有没有真模型。
     """
-    from zfh_voice import api
+    from zfh_voice2 import api
 
     seen = {}
 

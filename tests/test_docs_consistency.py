@@ -56,7 +56,7 @@ def test_docs_mention_auto():
 
 def test_postprocess_module_docstring_not_stale():
     """`postprocess` 模块头不该再写「默认关闭」"""
-    txt = _read(os.path.join("src", "zfh_voice", "postprocess.py"))
+    txt = _read(os.path.join("src", "zfh_voice2", "postprocess.py"))
     head = txt.split('"""')[1] if '"""' in txt else txt[:2000]
     assert "默认关闭" not in head, \
         "模块头还写着「默认关闭」，但默认已改成 auto（按版本选）"
@@ -70,7 +70,7 @@ def test_gain_default_matches_docs_claim():
     真实值见 `postprocess.BY_VERSION`（以长文本校准）：
     v2 → 0、v2Pro → 1。
     """
-    from zfh_voice import postprocess as pp
+    from zfh_voice2 import postprocess as pp
     assert pp.gain_for_version("v2") == 0.0
     assert pp.gain_for_version("v2Pro") == 1.0
     # 文档必须提到这两个版本，且不能把 v2Pro 说成 0
@@ -105,7 +105,7 @@ def test_docs_say_weight_names_are_flexible():
 # ---------- 种子 ----------
 
 def test_docs_seed_default_is_42():
-    from zfh_voice.api import DEFAULT_SEED
+    from zfh_voice2.api import DEFAULT_SEED
     assert DEFAULT_SEED == 42
     for rel in ("README.md", "docs/安装提示词.md"):
         txt = _read(rel)

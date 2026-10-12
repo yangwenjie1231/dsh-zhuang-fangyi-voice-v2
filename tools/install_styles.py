@@ -191,8 +191,8 @@ def main() -> int:
     if not args.dry_run and n_ok:
         print("""
   ## 用法
-      python -m zfh_voice say "你好" --style firm
-      python -m zfh_voice status          # 会列出可用风格
+      python -m zfh_voice2 say "你好" --style firm
+      python -m zfh_voice2 status          # 会列出可用风格
 
   ## HTTP
       POST /tts  {"text": "...", "style": "firm"}

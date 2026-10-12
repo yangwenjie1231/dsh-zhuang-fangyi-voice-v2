@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """命令行入口
 
-  python -m zfh_voice say "今天天气不错"              # 合成一句
-  python -m zfh_voice say "..." -o out.wav --seed 7
-  python -m zfh_voice batch lines.txt -d out/        # 批量（每行一条）
-  python -m zfh_voice serve --port 8765              # 起 HTTP 服务
-  python -m zfh_voice status                         # 检查模型是否就绪
-  python -m zfh_voice cache --clear                  # 查看/清理缓存
+  python -m zfh_voice2 say "今天天气不错"              # 合成一句
+  python -m zfh_voice2 say "..." -o out.wav --seed 7
+  python -m zfh_voice2 batch lines.txt -d out/        # 批量（每行一条）
+  python -m zfh_voice2 serve --port 8766              # 起 HTTP 服务
+  python -m zfh_voice2 status                         # 检查模型是否就绪
+  python -m zfh_voice2 cache --clear                  # 查看/清理缓存
 """
 import argparse
 import json
@@ -54,7 +54,7 @@ def _build_tts(args):
 # （本机实测：加载 3.7s、首句预热约 15s）。所以提供两条省时路径：
 #   1) serve --idle-timeout  让服务常驻，空闲超时才释放
 #   2) say --server          一次性命令直接复用已在运行的服务
-DEFAULT_SERVER = "http://127.0.0.1:8765"
+DEFAULT_SERVER = "http://127.0.0.1:8766"
 
 
 def _server_post(server, path, payload=None, timeout=600):
@@ -251,7 +251,7 @@ def cmd_styles(args):
         print(f"  {mark}{star} {s['name']:10s} {s['label']:10s} "
               f"{os.path.basename(ref):28s} {s['desc']}")
     print()
-    print("用法: python -m zfh_voice say \"你好\" --style firm")
+    print("用法: python -m zfh_voice2 say \"你好\" --style firm")
     print("      POST /tts  {\"text\":\"...\",\"style\":\"firm\"}")
     return 0
 
@@ -273,7 +273,7 @@ def cmd_cache(args):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(
-        prog="zfh-voice", description="庄方宜专属音色合成")
+        prog="zfh-voice2", description="庄方宜专属音色合成")
     ap.add_argument("--backend", default="onnx", choices=["onnx", "torch"],
                     help="推理后端（默认 onnx）")
     ap.add_argument("--model-dir", default=None, help="模型目录")
@@ -328,7 +328,7 @@ def main(argv=None):
 
     p = sub.add_parser("serve", help="启动 HTTP 常驻服务")
     p.add_argument("--host", default="127.0.0.1")
-    p.add_argument("--port", type=int, default=8765)
+    p.add_argument("--port", type=int, default=8766)
     p.add_argument("--idle-timeout", type=float, default=0,
                    help="空闲多少秒后自动释放模型（腾出显存）；"
                         "0 = 一直常驻（默认）")

@@ -10,8 +10,8 @@
 import numpy as np
 import pytest
 
-from zfh_voice import postprocess
-from zfh_voice.api import DEFAULT_SEED
+from zfh_voice2 import postprocess
+from zfh_voice2.api import DEFAULT_SEED
 
 
 class FakeBackend:
@@ -32,7 +32,7 @@ class FakeBackend:
 
 def _tts(tmp_path, monkeypatch, **kw):
     """构造一个不碰真实模型的 TTS：绕过文件校验，直接注入假后端。"""
-    from zfh_voice import api
+    from zfh_voice2 import api
     import os
 
     tmp_path = str(tmp_path)
@@ -155,7 +155,7 @@ def test_say_many_forwards_brightness(tmp_path):
 
 def test_remote_say_forwards_brightness(monkeypatch):
     """CLI 走常驻服务时必须把 brightness_db 放进请求体（曾漏传）"""
-    from zfh_voice import cli
+    from zfh_voice2 import cli
 
     captured = {}
 
@@ -176,7 +176,7 @@ def test_remote_say_default_brightness_is_omitted(monkeypatch):
     让服务端用它自己的默认值（同样是 auto，按它加载的模型版本选）。
     显式传 0 才表示"我要关掉" —— 两者语义不同，不能混。
     """
-    from zfh_voice import cli
+    from zfh_voice2 import cli
 
     captured = {}
     monkeypatch.setattr(
@@ -189,7 +189,7 @@ def test_remote_say_default_brightness_is_omitted(monkeypatch):
 
 def test_remote_say_explicit_zero_is_sent(monkeypatch):
     """显式传 0 必须发出去（表示"关掉"，与"未指定"不同）"""
-    from zfh_voice import cli
+    from zfh_voice2 import cli
 
     captured = {}
     monkeypatch.setattr(
@@ -201,7 +201,7 @@ def test_remote_say_explicit_zero_is_sent(monkeypatch):
 
 def test_server_forwards_brightness_to_tts():
     """服务端收到 brightness_db 后必须转给 tts.say（曾漏传）"""
-    from zfh_voice import server as srv
+    from zfh_voice2 import server as srv
 
     class FakeTTS:
         is_loaded = True
@@ -249,7 +249,7 @@ def test_server_forwards_brightness_to_tts():
 
 def test_server_default_brightness_is_none():
     """不传 brightness_db 时应是 None（让 TTS 用实例默认值），不是 0 覆盖"""
-    from zfh_voice import server as srv
+    from zfh_voice2 import server as srv
 
     class FakeTTS:
         is_loaded = True

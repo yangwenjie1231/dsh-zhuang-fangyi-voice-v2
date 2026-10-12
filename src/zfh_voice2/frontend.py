@@ -114,7 +114,7 @@ def mixed_available(gsv_root=None, model_dir=None):
 
     ⚠️ `model_dir` 与 `gsv_root` **都要传**。踩过的坑：只传 gsv_root 时，
     内部 `prepare()` → `resolve_model_dir(None)` 会去找**默认**模型目录
-    （仓库 `models/` 或 `~/.cache/zfh-voice/models`），而真实部署用的是
+    （仓库 `models/` 或 `~/.cache/zfh-voice2/models`），而真实部署用的是
     `--model-dir` 指定的目录 → 找不到就抛 FileNotFoundError →
     被 `api._auto_localize()` 吞掉 → **中英混排永远降级成中文读法**。
     """

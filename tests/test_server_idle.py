@@ -18,7 +18,7 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "src"))
 
-from zfh_voice import server as srv  # noqa: E402
+from zfh_voice2 import server as srv  # noqa: E402
 
 
 class FakeResult:
@@ -113,7 +113,7 @@ def test_handler_state_defaults():
 
 def test_tts_unload_then_reload(tmp_path, monkeypatch):
     """TTS.unload 后应能按需重新加载（用假后端替换 make_backend）"""
-    from zfh_voice import api
+    from zfh_voice2 import api
 
     created = {"n": 0}
 

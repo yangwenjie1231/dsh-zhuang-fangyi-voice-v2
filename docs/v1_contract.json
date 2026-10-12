@@ -1,7 +1,7 @@
 {
-  "plugin": "dsh-zhuang-fangyi-voice",
+  "plugin": "dsh-zhuang-fangyi-voice-v2",
   "version": "0.1.0",
-  "service_name": "zfhVoice",
+  "service_name": "zfhVoiceV2",
   "service_methods": [
     "synthesize",
     "health",
@@ -35,7 +35,7 @@
     "gsvRoot": "''",
     "modelDir": "''",
     "host": "'127.0.0.1'",
-    "port": "8765",
+    "port": "8766",
     "resident": "false",
     "idleStopSec": "DEFAULT_IDLE_STOP_SEC",
     "idleAction": "DEFAULT_IDLE_ACTION",

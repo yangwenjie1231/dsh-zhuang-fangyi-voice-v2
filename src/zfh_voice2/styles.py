@@ -23,7 +23,7 @@ v2 改为**按风格解析**：`ref/styles/<name>.wav`，
 但**仍保留** `ref/default.wav` 作为 normal 的兼容路径。
 
 ## 用法
-    from zfh_voice.styles import STYLES, resolve_style, list_styles
+    from zfh_voice2.styles import STYLES, resolve_style, list_styles
 
     resolve_style(None)        -> ("normal", Path(".../ref/default.wav"))
     resolve_style("firm")      -> ("firm",   Path(".../ref/styles/firm.wav"))

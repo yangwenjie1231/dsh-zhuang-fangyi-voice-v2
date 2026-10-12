@@ -2,7 +2,7 @@
 """HTTP 服务：给桌宠等外部程序调用
 
 启动：
-    python -m zfh_voice serve --port 8765
+    python -m zfh_voice2 serve --port 8766
 
 ## 接口（v2：`/v1/*` 与 `/v2/*` 前缀并存，无前缀 = v1 行为）
 
@@ -76,7 +76,7 @@ def make_handler(tts, state=None):
     state.setdefault("inflight", 0)
 
     class Handler(BaseHTTPRequestHandler):
-        server_version = f"zfh-voice/{__version__}"
+        server_version = f"zfh-voice2/{__version__}"
 
         def log_message(self, fmt, *args):
             if os.environ.get("ZFH_VERBOSE"):
@@ -123,7 +123,7 @@ def make_handler(tts, state=None):
                 self._touch()
                 idle = time.time() - state["last_activity"]
                 body = {
-                    "ok": True, "service": "zfh-voice",
+                    "ok": True, "service": "zfh-voice2",
                     "version": __version__, "backend": tts._backend_kind,
                     "ready": True,
                     # 常驻状态：模型是否在内存/显存里，以及距上次活动多久
@@ -304,7 +304,7 @@ def _idle_watchdog(tts, state, idle_timeout, verbose=True):
                           f"已释放模型（下次请求将重新加载）", flush=True)
 
 
-def serve(tts, host="127.0.0.1", port=8765, idle_timeout=0, preload=True):
+def serve(tts, host="127.0.0.1", port=8766, idle_timeout=0, preload=True):
     """
     idle_timeout: 空闲多少秒后自动释放模型；0 = 一直常驻（默认）
     preload:      启动时是否预先加载模型（预热）

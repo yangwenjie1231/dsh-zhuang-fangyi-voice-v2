@@ -17,7 +17,7 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "src"))
 
-from zfh_voice import textprep  # noqa: E402
+from zfh_voice2 import textprep  # noqa: E402
 
 
 # ── 基本替换 ────────────────────────────────────────────────────────────
@@ -114,7 +114,7 @@ def test_api_rejects_text_with_no_spoken_content(tmp_path, monkeypatch):
     注意：**纯英文不再算"无可发音内容"** —— 中英混排可用时英文段能走
     english.py 产出音素（真英文发音）。这里用纯标点来触发该分支。
     """
-    from zfh_voice import api
+    from zfh_voice2 import api
 
     monkeypatch.setattr(api.paths, "resolve_model_dir",
                         lambda *a, **k: str(tmp_path))
@@ -131,7 +131,7 @@ def test_api_rejects_text_with_no_spoken_content(tmp_path, monkeypatch):
 
 def test_pure_english_is_speakable_when_mixed_available(tmp_path, monkeypatch):
     """中英混排可用时，纯英文**不该**被提前拦下（它真能念）"""
-    from zfh_voice import api, frontend
+    from zfh_voice2 import api, frontend
 
     try:
         frontend.prepare(str(tmp_path))
@@ -167,7 +167,7 @@ def test_pure_english_is_speakable_when_mixed_available(tmp_path, monkeypatch):
 
 def test_localize_auto_prefers_real_english(tmp_path, monkeypatch):
     """localize='auto' 且混排可用时，英文应**原样送**（不转中文读法）"""
-    from zfh_voice import api, frontend
+    from zfh_voice2 import api, frontend
 
     try:
         frontend.prepare(str(tmp_path))
@@ -203,7 +203,7 @@ def test_localize_auto_prefers_real_english(tmp_path, monkeypatch):
 
 def test_say_uses_localized_text(tmp_path, monkeypatch):
     """say() 应把转换后的文本送给后端，并记录在 result.spoken"""
-    from zfh_voice import api
+    from zfh_voice2 import api
 
     monkeypatch.setattr(api.paths, "resolve_model_dir",
                         lambda *a, **k: str(tmp_path))
@@ -241,7 +241,7 @@ def test_localize_auto_string_is_not_truthy_bug(tmp_path, monkeypatch):
     把"自动"误判成"总是转换"，于是默认路径永远走中文读法（基皮尤），
     真实英文发音的能力被静默绕过。这是个很难从输出看出来的错。
     """
-    from zfh_voice import api
+    from zfh_voice2 import api
 
     monkeypatch.setattr(api.paths, "resolve_model_dir",
                         lambda *a, **k: str(tmp_path))
@@ -286,7 +286,7 @@ def test_localize_auto_string_is_not_truthy_bug(tmp_path, monkeypatch):
 
 
 def test_localize_can_be_disabled_per_call(tmp_path, monkeypatch):
-    from zfh_voice import api
+    from zfh_voice2 import api
 
     monkeypatch.setattr(api.paths, "resolve_model_dir",
                         lambda *a, **k: str(tmp_path))

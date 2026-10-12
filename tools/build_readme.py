@@ -29,7 +29,16 @@ from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-V1 = Path(r"D:\A\dsh-zhuang-fangyi-voice\README.md")
+# ⚠️ 本脚本是**一次性**的：从 v0.1.0 的 README 生成 v0.2.0 的 README
+#    （插入三种风格 / API 版本化 / 路径探测 / 兼容性章节）。
+#
+#    **不要重复运行** —— v2 的 README 生成后还要经过"并存转换"
+#    （`zfh_voice` -> `zfh_voice2`、端口 8765 -> 8766 等）。
+#    再跑一次会把那些改动**全部覆盖回 v1 的样子**（实测踩过：
+#    README 里 31 处 `zfh_voice` 复活）。
+#
+#    现在改为**读 v2 自己的 README**，使本脚本幂等（重跑无害）。
+V1 = Path(r"D:\A\dsh-zhuang-fangyi-voice-v2\README.md")
 V2 = Path(r"D:\A\dsh-zhuang-fangyi-voice-v2\README.md")
 
 src = V1.read_text(encoding="utf-8")
@@ -84,17 +93,17 @@ python tools/install_styles.py
 
 ```bash
 # CLI（--style 是**全局参数**，要放在子命令前）
-python -m zfh_voice styles                          # 列出风格
-python -m zfh_voice --style firm say "你好"
-python -m zfh_voice --style gentle say "你好"
+python -m zfh_voice2 styles                          # 列出风格
+python -m zfh_voice2 --style firm say "你好"
+python -m zfh_voice2 --style gentle say "你好"
 
 # HTTP
-curl -X POST http://127.0.0.1:8765/tts \
+curl -X POST http://127.0.0.1:8766/tts \
      -H 'content-type: application/json' \
      -d '{"text":"你好","style":"firm"}' -o out.wav
 
 # DSH 服务（桌宠）
-const v = ctx.get('zfhVoice')
+const v = ctx.get('zfhVoiceV2')
 const r = await v.synthesize('你好', 'firm')   // 不传第二个参数 = 用配置的风格
 await v.setStyle('gentle')                     // 运行时切换
 const list = await v.styles()                  // 列出可用风格
@@ -165,7 +174,7 @@ v0.1.0 需要**在 DSH patch 里手写绝对路径**（`modelDir` / `python` / `
 
 ```bash
 # 不传 --model-dir 也能跑
-python -m zfh_voice --backend torch --style firm say "你好"
+python -m zfh_voice2 --backend torch --style firm say "你好"
 ```
 
 ---
@@ -174,7 +183,7 @@ python -m zfh_voice --backend torch --style firm say "你好"
 
 | 层面 | 承诺 |
 |---|---|
-| `ctx.get('zfhVoice')` | 方法**签名与返回结构不变**（新增 `styles()` / `setStyle()` 为增量） |
+| `ctx.get('zfhVoiceV2')` | 方法**签名与返回结构不变**（新增 `styles()` / `setStyle()` 为增量） |
 | HTTP | `/health` `/tts` `/unload` `/voices` **原样保留** |
 | 配置 | `cordis.patch.yml` 原有字段**全部继续可用** |
 | CLI | 原有 8 个子命令**继续可用** |

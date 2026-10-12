@@ -114,10 +114,10 @@ ok('⭐ 自动带 PYTHONPATH=src（src 布局，不装也能跑）', () => {
   assert.equal(c.cwd, path.join('a', 'b'))
 })
 
-ok('port 非法值回落 8765（不把 NaN 传给子进程）', () => {
+ok('port 非法值回落 8766（不把 NaN 传给子进程）', () => {
   for (const bad of [0, -1, NaN, 'abc', null]) {
     const c = buildServeCommand({ python: 'p', repoDir: 'R', port: bad })
-    assert.equal(c.argv[c.argv.length - 1], '8765')
+    assert.equal(c.argv[c.argv.length - 1], '8766')
   }
 })
 
@@ -200,7 +200,7 @@ ok('非法值被挡（后端白名单 / 端口范围 / 非布尔）', () => {
     backend: 'cuda', port: 99999, resident: 'yes', idleStopSec: -1, python: 'x'.repeat(999)
   })
   assert.equal(c.backend, 'auto', '非法后端应回落 auto')
-  assert.equal(c.port, 8765, '端口越界应回落')
+  assert.equal(c.port, 8766, '端口越界应回落')
   assert.equal(c.resident, false, '非布尔不该被当成 true')
   assert.equal(c.idleStopSec, DEFAULT_IDLE_STOP_SEC, '负数应回落')
   assert.equal(c.python, '', '超长字符串应被拒')
@@ -313,9 +313,9 @@ section('7. 服务面')
 
 ok('插件导出 name / apply / 服务名常量', async () => {
   const mod = await import('../index.js')
-  assert.equal(mod.name, 'dsh-zhuang-fangyi-voice')
+  assert.equal(mod.name, 'dsh-zhuang-fangyi-voice-v2')
   assert.equal(typeof mod.apply, 'function')
-  assert.equal(mod.SERVICE_NAME, 'zfhVoice')
+  assert.equal(mod.SERVICE_NAME, 'zfhVoiceV2')
 })
 
 ok('RAPID_EXIT_MS 是 10 秒（与桌宠 exe 启动同一条纪律）', () => {
@@ -352,18 +352,18 @@ function makeCtx (opts = {}) {
   }
 }
 
-await okAsync('⭐⭐ apply() 能跑完并挂上 zfhVoice 服务（入口不能抛）', async () => {
+await okAsync('⭐⭐ apply() 能跑完并挂上 zfhVoiceV2 服务（入口不能抛）', async () => {
   const mod = await import('../index.js')
   const ctx = makeCtx()
   const svc = mod.apply(ctx, {})
-  assert.ok(ctx.provided.has('zfhVoice'), '必须挂上 zfhVoice 服务（桌宠靠它发现本插件）')
-  assert.equal(ctx.provided.get('zfhVoice'), svc, '挂的应是同一个对象')
+  assert.ok(ctx.provided.has('zfhVoiceV2'), '必须挂上 zfhVoiceV2 服务（桌宠靠它发现本插件）')
+  assert.equal(ctx.provided.get('zfhVoiceV2'), svc, '挂的应是同一个对象')
   // 服务面齐全（桌宠会调这几个）
   for (const k of ['synthesize', 'health', 'status', 'start', 'stop', 'configure']) {
     assert.equal(typeof svc[k], 'function', `服务缺方法 ${k}`)
   }
   // 日志里能看到挂载信息（用户排查的第一条线索）
-  assert.ok(ctx.logs.some(l => l.includes('zfhVoice')), `日志里应有挂载记录：${JSON.stringify(ctx.logs)}`)
+  assert.ok(ctx.logs.some(l => l.includes('zfhVoiceV2')), `日志里应有挂载记录：${JSON.stringify(ctx.logs)}`)
   // 清理：跑掉 effect（停掉定时器）
   for (const d of ctx.effects) if (typeof d === 'function') assert.doesNotThrow(() => d())
 })
@@ -373,7 +373,7 @@ await okAsync('⭐ 没有 subprocess 且端口上没有服务时，synthesize �
   const ctx = makeCtx()          // get('subprocess') → undefined
   // ⚠️ 必须用一个**确定没服务**的端口。
   //
-  // 早先这条用的是默认 8765，于是当环境里恰好有服务（例如 DSH 自己已经把
+  // 早先这条用的是默认 8766，于是当环境里恰好有服务（例如 DSH 自己已经把
   // 插件启起来、或用户手动起过）时，`probe()` 会成功、synthesize 真的合成出
   // 音频，断言 `r === null` 就失败 —— 而那是**正确行为**（复用已有服务是设计
   // 意图，见 index.js 顶部「只停自己起的」那条纪律）。
@@ -768,55 +768,55 @@ ok('⭐ classifyFailure：没有报告时透传兜底，不假装知道', () => 
   assert.deepEqual(c.commands, [])
 })
 
-ok('buildDoctorCommand：**不准重复** -m zfh_voice（曾因此拼出废命令）', () => {
+ok('buildDoctorCommand：**不准重复** -m zfh_voice2（曾因此拼出废命令）', () => {
   const launch = {
-    argv: ['py', '-m', 'zfh_voice', '--backend', 'torch', '--model-dir', 'D:\\m',
-      'serve', '--host', '127.0.0.1', '--port', '8765'],
+    argv: ['py', '-m', 'zfh_voice2', '--backend', 'torch', '--model-dir', 'D:\\m',
+      'serve', '--host', '127.0.0.1', '--port', '8766'],
     cwd: 'C:\\repo',
     env: { PYTHONPATH: 'x' }
   }
   const c = buildDoctorCommand({ launch, jsonPath: 'C:\\t\\d.json' })
-  // 曾经这里 slice(1, at) 把 '-m','zfh_voice' 也当成全局参数带过去，
-  // 拼出 `python -m zfh_voice -m zfh_voice ... doctor` —— Python 直接报错，
+  // 曾经这里 slice(1, at) 把 '-m','zfh_voice2' 也当成全局参数带过去，
+  // 拼出 `python -m zfh_voice2 -m zfh_voice2 ... doctor` —— Python 直接报错，
   // JSON 永不生成，表现为"体检超时"。整个命令必须逐字相等：
   assert.deepEqual(c.argv, [
-    'py', '-m', 'zfh_voice',
+    'py', '-m', 'zfh_voice2',
     '--backend', 'torch', '--model-dir', 'D:\\m',
     'doctor', '--json', 'C:\\t\\d.json'
   ])
-  assert.equal(c.argv.filter(x => x === 'zfh_voice').length, 1, 'zfh_voice 只能出现一次')
+  assert.equal(c.argv.filter(x => x === 'zfh_voice2').length, 1, 'zfh_voice2 只能出现一次')
   assert.equal(c.argv.filter(x => x === '-m').length, 1, '-m 只能出现一次')
   assert.ok(!c.argv.includes('serve'), '不该把 serve 带进去')
 })
 
 ok('buildDoctorCommand：serve 前没有全局参数时也不出错', () => {
   const c = buildDoctorCommand({
-    launch: { argv: ['py', '-m', 'zfh_voice', 'serve', '--port', '1'], cwd: 'c', env: {} },
+    launch: { argv: ['py', '-m', 'zfh_voice2', 'serve', '--port', '1'], cwd: 'c', env: {} },
     jsonPath: 'X'
   })
-  assert.deepEqual(c.argv, ['py', '-m', 'zfh_voice', 'doctor', '--json', 'X'])
+  assert.deepEqual(c.argv, ['py', '-m', 'zfh_voice2', 'doctor', '--json', 'X'])
 })
 
 ok('buildDoctorCommand：argv 形状异常时不硬套（宁可返回 null）', () => {
-  // 没有 `-m zfh_voice` 前缀（不是我们认知的形状）→ 只复用 python，不猜全局参数
+  // 没有 `-m zfh_voice2` 前缀（不是我们认知的形状）→ 只复用 python，不猜全局参数
   const c = buildDoctorCommand({
     launch: { argv: ['py', 'serve', '--port', '1'], cwd: 'c', env: {} },
     jsonPath: 'X'
   })
-  assert.deepEqual(c.argv, ['py', '-m', 'zfh_voice', 'doctor', '--json', 'X'])
+  assert.deepEqual(c.argv, ['py', '-m', 'zfh_voice2', 'doctor', '--json', 'X'])
 })
 
 ok('buildDoctorCommand：全局参数必须排在子命令前（CLI 的硬要求）', () => {
   const launch = {
-    argv: ['py', '-m', 'zfh_voice', '--backend', 'torch', '--model-dir', 'D:\\m',
-      'serve', '--host', '127.0.0.1', '--port', '8765'],
+    argv: ['py', '-m', 'zfh_voice2', '--backend', 'torch', '--model-dir', 'D:\\m',
+      'serve', '--host', '127.0.0.1', '--port', '8766'],
     cwd: 'C:\\repo',
     env: { PYTHONPATH: 'x' }
   }
   const c = buildDoctorCommand({ launch, jsonPath: 'C:\\t\\d.json' })
   assert.equal(c.argv[0], 'py')
   assert.equal(c.argv[1], '-m')
-  assert.equal(c.argv[2], 'zfh_voice')
+  assert.equal(c.argv[2], 'zfh_voice2')
   const iDoctor = c.argv.indexOf('doctor')
   const iBackend = c.argv.indexOf('--backend')
   assert.ok(iBackend > 0 && iBackend < iDoctor, '全局参数要在 doctor 之前')

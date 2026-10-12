@@ -1,16 +1,16 @@
 /**
- * dsh-zhuang-fangyi-voice · DSH 插件（宿主半边）
+ * dsh-zhuang-fangyi-voice-v2 · DSH 插件（宿主半边）
  *
  * ── 它是什么 ──────────────────────────────────────────────────────────────
  *
- * 这个仓库的 Python 部分（`src/zfh_voice`）是**推理库**：给一句中文，出 WAV。
+ * 这个仓库的 Python 部分（`src/zfh_voice2`）是**推理库**：给一句中文，出 WAV。
  * 本文件是它的 **DSH 插件外壳**，负责三件事：
  *
  *   1. **托管 Python 服务的进程**（启动 / 保活 / 空闲释放显存）；
- *   2. 把合成能力挂成宿主服务 **`zfhVoice`**（其它插件 `ctx.get('zfhVoice')` 就能用）；
+ *   2. 把合成能力挂成宿主服务 **`zfhVoiceV2`**（其它插件 `ctx.get('zfhVoiceV2')` 就能用）；
  *   3. 给用户一个可配的接缝（后端、python、端口、常驻策略）。
  *
- * 桌宠插件就是这么用的：它拿到 `zfhVoice` 后把 AI 的回答合成出来播放。
+ * 桌宠插件就是这么用的：它拿到 `zfhVoiceV2` 后把 AI 的回答合成出来播放。
  * **没装本插件时桌宠仍然能用固定台词** —— 两个插件彼此独立。
  *
  * ── 为什么不需要任何绝对路径 ──────────────────────────────────────────────
@@ -32,12 +32,12 @@
  *
  * ── 两条纪律 ──────────────────────────────────────────────────────────────
  *
- *   · **只停自己起的**：用户在终端手动 `python -m zfh_voice serve` 时，
+ *   · **只停自己起的**：用户在终端手动 `python -m zfh_voice2 serve` 时，
  *     插件只连接、绝不终止（`ours` 标志就是这件事的账本）。
  *   · **秒退不重启**：依赖没装/模型缺失/端口占用时自动重启会变成重启风暴。
  *     10 秒内退出只记 `lastError`，等用户显式操作。
  *
- * @module dsh-zhuang-fangyi-voice
+ * @module dsh-zhuang-fangyi-voice-v2
  */
 
 import fs from 'node:fs'
@@ -71,10 +71,10 @@ export const STDIO_CAPTURE = Object.freeze({
 /** 本插件的安装目录 —— 一切相对路径的锚点（因此不需要绝对路径配置）。 */
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 
-export const name = 'dsh-zhuang-fangyi-voice'
+export const name = 'dsh-zhuang-fangyi-voice-v2'
 
 /** 服务名（桌宠通过它取合成能力）。 */
-export const SERVICE_NAME = 'zfhVoice'
+export const SERVICE_NAME = 'zfhVoiceV2'
 
 /** 空闲多久停掉服务释放显存（秒）—— 默认 5 分钟。 */
 export const DEFAULT_IDLE_STOP_SEC = 300
@@ -191,7 +191,7 @@ export function resolvePython (o = {}) {
  *
  * CLI 形状（本仓库 `cli.py`）——**全局参数必须在子命令前面**：
  *
- *     python -m zfh_voice --backend torch --gsv-root <dir> serve --host 127.0.0.1 --port 8765
+ *     python -m zfh_voice2 --backend torch --gsv-root <dir> serve --host 127.0.0.1 --port 8766
  *
  * @param {object} o
  * @param {string} o.python
@@ -210,8 +210,8 @@ export function buildServeCommand (o = {}) {
   const host = String(o.host ?? '').trim() || '127.0.0.1'
   const port = Number.isFinite(Number(o.port)) && Number(o.port) > 0
     ? Math.floor(Number(o.port))
-    : 8765
-  const argv = [python, '-m', 'zfh_voice']
+    : 8766
+  const argv = [python, '-m', 'zfh_voice2']
   const backend = String(o.backend ?? '').trim()
   // `auto` = 不传，交给 Python 侧自己选（它有二选一的逻辑）。
   if (backend === 'torch' || backend === 'onnx') argv.push('--backend', backend)
@@ -238,7 +238,7 @@ export function buildServeCommand (o = {}) {
     argv,
     cwd: repoDir,
     // `src/` 布局：从仓库直接跑必须把 `src` 放进 PYTHONPATH，否则
-    // `python -m zfh_voice` 报 ModuleNotFoundError（没 pip install 时）。
+    // `python -m zfh_voice2` 报 ModuleNotFoundError（没 pip install 时）。
     // 这一条让用户**不必先安装**就能跑起来。
     env: { PYTHONPATH: path.join(repoDir, 'src') }
   }
@@ -262,16 +262,16 @@ export function buildDoctorCommand (o = {}) {
   if (jsonPath === '') return null
   const python = base.argv[0]
   const at = base.argv.indexOf('serve')
-  // ⚠️ serve 的 argv 形状是 [python, '-m', 'zfh_voice', ...全局参数, 'serve', ...]，
-  // 要复用的**只有全局参数** —— 必须跳过 `-m zfh_voice`，否则会拼出
-  //   python -m zfh_voice -m zfh_voice --backend ... doctor
+  // ⚠️ serve 的 argv 形状是 [python, '-m', 'zfh_voice2', ...全局参数, 'serve', ...]，
+  // 要复用的**只有全局参数** —— 必须跳过 `-m zfh_voice2`，否则会拼出
+  //   python -m zfh_voice2 -m zfh_voice2 --backend ... doctor
   // 这种命令（Python 直接报错退出，JSON 永远不生成）。
   let start = 1
   const iM = base.argv.indexOf('-m')
-  if (iM >= 0 && base.argv[iM + 1] === 'zfh_voice') start = iM + 2
+  if (iM >= 0 && base.argv[iM + 1] === 'zfh_voice2') start = iM + 2
   const globals = (at > start) ? base.argv.slice(start, at) : []
   return {
-    argv: [python, '-m', 'zfh_voice', ...globals, 'doctor', '--json', jsonPath],
+    argv: [python, '-m', 'zfh_voice2', ...globals, 'doctor', '--json', jsonPath],
     cwd: base.cwd,
     env: base.env
   }
@@ -363,7 +363,7 @@ export function formatSetupGuidance (probe, docPath = 'docs/安装提示词.md',
   const hasReport = probe?.report !== null && probe?.report !== undefined
   if (probe === null || probe.ran !== true || !hasReport) {
     lines.push('庄方宜语音：环境还没配好（自动体检没拿到结果）。')
-    lines.push('  先手动跑一次：python -m zfh_voice doctor')
+    lines.push('  先手动跑一次：python -m zfh_voice2 doctor')
     if (probe?.error) lines.push(`  （体检失败原因：${probe.error}）`)
     lines.push(`  详细步骤见 ${docPath}`)
     return lines.join('\n')
@@ -380,7 +380,7 @@ export function formatSetupGuidance (probe, docPath = 'docs/安装提示词.md',
     lines.push('  在仓库目录执行：')
     for (const c of cls.commands) lines.push(`    ${c}`)
   } else {
-    lines.push('  先跑体检看细节：python -m zfh_voice doctor')
+    lines.push('  先跑体检看细节：python -m zfh_voice2 doctor')
   }
   const rep = probe.report
   if (rep?.gpu?.present === true) {
@@ -551,7 +551,7 @@ export function defaultConfig () {
     /** 模型目录（等价 ZFH_MODEL_DIR）。留空 = <repo>/models → ~/.cache。 */
     modelDir: '',
     host: '127.0.0.1',
-    port: 8765,
+    port: 8766,
     /** 常驻：true = 一直占着（快）；false = 空闲后释放显存。 */
     resident: false,
     /** 非常驻时，空闲多少秒停掉（0 = 不停）。 */
@@ -701,12 +701,12 @@ function createClient (cfg, logger) {
         const buf = Buffer.from(await res.arrayBuffer())
         if (buf.length === 0 || buf.length > MAX_SPEECH_BYTES) return null
         if (buf.toString('ascii', 0, 4) !== 'RIFF') {
-          logger?.warn?.('zhuang-fangyi-voice: /tts 返回的不是 RIFF/WAV，已丢弃')
+          logger?.warn?.('zhuang-fangyi-voice-v2: /tts 返回的不是 RIFF/WAV，已丢弃')
           return null
         }
         return { bytes: buf, durationMs: wavDurationMs(buf) }
       } catch (error) {
-        logger?.warn?.(`zhuang-fangyi-voice: 合成失败：${error?.message ?? error}`)
+        logger?.warn?.(`zhuang-fangyi-voice-v2: 合成失败：${error?.message ?? error}`)
         return null
       } finally { clearTimeout(timer) }
     }
@@ -760,15 +760,15 @@ export function createSupervisor (o = {}) {
     try { probe = await diagnose() } catch { probe = null }
     const cls = (probe !== null && probe.ran === true && probe.ok === true)
       ? classifyFailure(probe.report, reason)
-      : { kind: 'unknown', summary: reason, commands: ['python -m zfh_voice doctor'] }
+      : { kind: 'unknown', summary: reason, commands: ['python -m zfh_voice2 doctor'] }
     if (cls.kind === 'unknown' && probe?.ran !== true) {
-      cls.commands = ['python -m zfh_voice doctor   # 先看环境缺什么']
+      cls.commands = ['python -m zfh_voice2 doctor   # 先看环境缺什么']
     }
     lastFailure = cls
     lastError = cls.summary + (cls.commands.length > 0 ? ` —— 修复：${cls.commands[0]}` : '')
     logger?.warn?.(probe !== null
       ? formatSetupGuidance(probe, undefined, { backend: cfg.backend })
-      : `庄方宜语音：${cls.summary}\n  先跑：python -m zfh_voice doctor`)
+      : `庄方宜语音：${cls.summary}\n  先跑：python -m zfh_voice2 doctor`)
     return cls
   }
 
@@ -1157,11 +1157,11 @@ export function apply (ctx, rawConfig) {
    * ⚠️ 必须传**带 `env` 的那份 launch**（不是 `supervisor.status().launch`）——
    * `status()` 有意只暴露 `{argv, cwd}`（那是对外的诊断快照，不该带环境变量），
    * 而 doctor 和 serve 一样需要 `PYTHONPATH=<repo>/src`（包没 pip install 时
-   * 靠它才能 `python -m zfh_voice`）。
+   * 靠它才能 `python -m zfh_voice2`）。
    *
    * 症状（实测）：体检永远报 `timeout-no-report`，而手动跑同一条命令 2.7 秒就出
-   * JSON —— 因为探针起的那次 `python -m zfh_voice doctor` 直接
-   * `No module named zfh_voice` 退出了，JSON 自然永远不生成。
+   * JSON —— 因为探针起的那次 `python -m zfh_voice2 doctor` 直接
+   * `No module named zfh_voice2` 退出了，JSON 自然永远不生成。
    */
   const runDoctor = () => envProbe(launch)
 
@@ -1182,7 +1182,7 @@ export function apply (ctx, rawConfig) {
       clearInterval(timer)
       try { supervisor.stop() } catch { /* 已退出 */ }
     }
-  }, 'zhuang-fangyi-voice: service supervisor')
+  }, 'zhuang-fangyi-voice-v2: service supervisor')
 
   // 挂载后异步探一次环境。**不阻塞挂载**（挂载成功 ≠ 环境就绪，
   // 但环境没配好时用户必须立刻看到"缺什么、敲什么"，而不是等到点"试一句"才发现哑了）。
@@ -1205,17 +1205,17 @@ export function apply (ctx, rawConfig) {
       }
       logger?.warn?.(
         `庄方宜语音：环境体检没跑完（${probe.error ?? '未知原因'}）。\n` +
-        '  手动跑一次：python -m zfh_voice doctor\n' +
+        '  手动跑一次：python -m zfh_voice2 doctor\n' +
         '  安装步骤见 docs/安装提示词.md')
     }
     void run().catch(() => {})
     return () => { alive = false }
-  }, 'zhuang-fangyi-voice: startup env probe')
+  }, 'zhuang-fangyi-voice-v2: startup env probe')
 
   /**
    * 对外服务：其它插件用它把一句话变成语音。
    *
-   * 桌宠的用法：`const v = ctx.get('zfhVoice'); const r = await v.synthesize(text)`。
+   * 桌宠的用法：`const v = ctx.get('zfhVoiceV2'); const r = await v.synthesize(text)`。
    */
   const service = {
     /** 合成一句（自动确保服务在跑；失败返回 null，绝不抛）。 */
@@ -1283,7 +1283,7 @@ export function apply (ctx, rawConfig) {
       if (probe === null) return { ran: false, ok: null, report: null, failure: null }
       const failure = (probe.ran === true && probe.ok === true)
         ? classifyFailure(probe.report)
-        : { kind: 'probe-failed', summary: probe.error ?? '体检未完成', commands: ['python -m zfh_voice doctor'] }
+        : { kind: 'probe-failed', summary: probe.error ?? '体检未完成', commands: ['python -m zfh_voice2 doctor'] }
       return {
         ran: probe.ran === true,
         ok: probe.ok ?? null,
@@ -1339,9 +1339,15 @@ export function apply (ctx, rawConfig) {
   }
 
   ctx.provide(SERVICE_NAME, service)
+
+  // v0.2.0 并存模式：再挂一个短别名，方便桌宠。
+  // **不抢 `zfhVoiceV2`** —— 那是 v1 的，两版并存互不干扰。
+  try {
+    ctx.provide('zfhVoice2', service)
+  } catch { /* 别名已被占用，忽略 */ }
   ctx.effect(() => () => {
     try { supervisor.stop() } catch { /* 已退出 */ }
-  }, 'zhuang-fangyi-voice: dispose service')
+  }, 'zhuang-fangyi-voice-v2: dispose service')
 
   logger.info?.(`庄方宜语音：已挂载 ${SERVICE_NAME} 服务（repo=${repoDir}，python=${python}，` +
     `resident=${cfg.resident}）`)

@@ -15,7 +15,7 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "src"))
 
-from zfh_voice.backends.torch_backend import TorchBackend  # noqa: E402
+from zfh_voice2.backends.torch_backend import TorchBackend  # noqa: E402
 
 
 def test_default_sampling_unchanged():
@@ -73,7 +73,7 @@ def test_synth_uses_instance_sampling():
     """`synth()` 必须用 `self.sampling`，而不是在 inputs 里写死值"""
     src = open(os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "src", "zfh_voice", "backends", "torch_backend.py"),
+        "src", "zfh_voice2", "backends", "torch_backend.py"),
         encoding="utf-8").read()
     assert "inputs.update(self.sampling)" in src, \
         "synth 应把 self.sampling 合进 inputs"

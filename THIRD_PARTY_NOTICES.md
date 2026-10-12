@@ -9,7 +9,7 @@
 
 - 来源：https://github.com/RVC-Boss/GPT-SoVITS
 - 协议：MIT License, Copyright (c) 2024 RVC-Boss
-- 内嵌位置：`src/zfh_voice/_vendor/_gsv_text/`
+- 内嵌位置：`src/zfh_voice2/_vendor/_gsv_text/`
 - 内嵌范围：仅中文（zh）路径所需文件
   - `__init__.py`, `cleaner.py`, `chinese2.py`, `tone_sandhi.py`,
     `symbols.py`, `symbols2.py`, `opencpop-strict.txt`
@@ -25,7 +25,7 @@
    上游在 import 时用硬编码相对路径 `GPT_SoVITS/text/G2PWModel` 加载模型，
    且当目录不存在时 `g2pw/onnx_api.py` 会**联网下载**模型。
    现改为读取 `ZFH_G2PW_DIR` / `ZFH_BERT_DIR`，缺失时抛出明确错误，
-   由 `zfh_voice.frontend.prepare()` 负责解析与设置。
+   由 `zfh_voice2.frontend.prepare()` 负责解析与设置。
 
 3. **`chinese2.py`：分词器回退**
    `jieba_fast`（C 扩展，部分平台无轮子）导入失败时自动回退到纯 Python 的 `jieba`。

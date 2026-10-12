@@ -1,7 +1,7 @@
 {
-  "plugin": "dsh-zhuang-fangyi-voice",
+  "plugin": "dsh-zhuang-fangyi-voice-v2",
   "version_v1": "0.1.0",
-  "service_name": "zfhVoice",
+  "service_name": "zfhVoiceV2",
   "js_service": {
     "synthesize": {
       "sig": "async synthesize(text) -> object | null",
@@ -68,7 +68,7 @@
   "defaults": {
     "backend": "auto",
     "host": "127.0.0.1",
-    "port": 8765,
+    "port": 8766,
     "resident": false,
     "idleStopSec": 300,
     "idleAction": "stop",

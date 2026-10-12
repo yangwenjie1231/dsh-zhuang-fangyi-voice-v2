@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "src"))
 
-from zfh_voice import TTS  # noqa: E402
+from zfh_voice2 import TTS  # noqa: E402
 
 
 def main():

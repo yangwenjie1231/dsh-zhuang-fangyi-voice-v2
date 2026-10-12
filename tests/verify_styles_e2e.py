@@ -121,7 +121,7 @@ def main() -> int:
     if not args.skip_synth:
         for st in styles:
             dst = outdir / f"{st}.wav"
-            cmd = [args.python, "-m", "zfh_voice",
+            cmd = [args.python, "-m", "zfh_voice2",
                    "--backend", "torch",
                    "--model-dir", args.model_dir,
                    "--gsv-root", args.gsv_root,

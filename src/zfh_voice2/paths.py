@@ -4,7 +4,7 @@
 解析优先级：
   1. 环境变量 ZFH_MODEL_DIR
   2. 仓库根目录下的 models/
-  3. 用户缓存目录 ~/.cache/zfh-voice/models
+  3. 用户缓存目录 ~/.cache/zfh-voice2/models
 
 模型清单固定为 7 个 ONNX + 若干辅助文件，见 ONNX_FILES / AUX_FILES。
 """
@@ -39,7 +39,7 @@ AUX_FILES = [
 
 
 def repo_root():
-    """仓库根目录（本文件是 <root>/src/zfh_voice/paths.py）"""
+    """仓库根目录（本文件是 <root>/src/zfh_voice2/paths.py）"""
     here = os.path.dirname(os.path.abspath(__file__))
     return os.path.dirname(os.path.dirname(here))
 
@@ -47,7 +47,7 @@ def repo_root():
 def default_cache_dir():
     base = os.environ.get("XDG_CACHE_HOME") or os.path.join(
         os.path.expanduser("~"), ".cache")
-    return os.path.join(base, "zfh-voice", "models")
+    return os.path.join(base, "zfh-voice2", "models")
 
 
 def has_onnx(d):
@@ -165,7 +165,7 @@ def discover_model_dirs():
         1. 显式 `model_dir=`
         2. 环境变量 `ZFH_MODEL_DIR`
         3. `<repo>/models`
-        4. `~/.cache/zfh-voice/models`
+        4. `~/.cache/zfh-voice2/models`
 
     用户的实际布局往往是 `<某处>/zfh-models` / `zfh-models-v2pro`，
     得靠**在 DSH patch 里手写绝对路径**才行（容易写错、换机就废）。
@@ -239,7 +239,7 @@ def discover_model_dirs():
                 except OSError:
                     pass
 
-    for name in (".zfh-models", os.path.join(".zfh-voice", "models")):
+    for name in (".zfh-models", os.path.join(".zfh-voice2", "models")):
         _add(os.path.join(os.path.expanduser("~"), name))
 
     def rank(p: str) -> tuple:
@@ -321,7 +321,7 @@ def resolve_model_dir(model_dir=None, must_exist=True, require=None,
         lines.append("       python download_models.py --precision int8")
         lines.append("  2) 改用 torch 后端（不需要 ONNX，需要 .ckpt/.pth）")
         lines.append("       python download_models.py --torch-only")
-        lines.append("       python -m zfh_voice --backend torch "
+        lines.append("       python -m zfh_voice2 --backend torch "
                      "--gsv-root <GPT-SoVITS 目录> say \"你好\"")
     elif require == "torch":
         lines.append("  下载 torch 后端所需的原始权重（约 229MB）：")
@@ -332,7 +332,7 @@ def resolve_model_dir(model_dir=None, must_exist=True, require=None,
         lines.append("       python download_models.py --torch-only")
     lines.append(f"  3) 指定已有目录：设环境变量 ZFH_MODEL_DIR，或用 --model-dir")
     lines.append("  4) 不确定该装哪套？先跑环境体检：")
-    lines.append("       python -m zfh_voice doctor")
+    lines.append("       python -m zfh_voice2 doctor")
     raise FileNotFoundError("\n".join(lines))
 
 

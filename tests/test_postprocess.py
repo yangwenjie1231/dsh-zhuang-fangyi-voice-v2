@@ -9,7 +9,7 @@
 import numpy as np
 import pytest
 
-from zfh_voice import postprocess as pp
+from zfh_voice2 import postprocess as pp
 
 SR = 32000
 

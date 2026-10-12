@@ -2,11 +2,11 @@
 """裸环境守卫：诊断类命令必须在**没有任何第三方依赖**时也能跑
 
 背景（真事故）：
-    `zfh_voice/__init__.py` 曾急切 `from .api import TTS`，
+    `zfh_voice2/__init__.py` 曾急切 `from .api import TTS`，
     而 `api` → `audio` / `backends.base` 模块级 `import numpy`。
     结果在没装依赖的机器上：
 
-        python -m zfh_voice doctor   →   ModuleNotFoundError: numpy
+        python -m zfh_voice2 doctor   →   ModuleNotFoundError: numpy
 
     而 doctor 存在的唯一意义就是"告诉用户缺什么"——它偏偏在
     最需要它的时候（什么都没装）崩掉。
@@ -43,7 +43,7 @@ SHOULD_BE_ABSENT = ("numpy", "onnxruntime", "torch", "transformers",
 def _run(args, model_dir):
     """在**真正的裸环境**（-S，无 site-packages）里跑 CLI"""
     script = BODY.format(src=SRC, body=textwrap.dedent('''
-        from zfh_voice.cli import main
+        from zfh_voice2.cli import main
         sys.exit(main(sys.argv[1:]))
     '''))
     env = dict(os.environ)
@@ -113,11 +113,11 @@ def test_help_works_without_any_dependency(empty_dir):
 
 
 def test_import_package_alone_is_cheap():
-    """`import zfh_voice` 本身不该拉起重依赖"""
+    """`import zfh_voice2` 本身不该拉起重依赖"""
     r = _run_py('''
-        import zfh_voice
-        assert zfh_voice.__version__
-        assert callable(zfh_voice.resolve_model_dir)
+        import zfh_voice2
+        assert zfh_voice2.__version__
+        assert callable(zfh_voice2.resolve_model_dir)
         print("IMPORT-OK")
     ''')
     assert r.returncode == 0, f"裸 import 失败：\n{r.stderr}"
@@ -129,12 +129,12 @@ def test_lazy_attr_still_exposes_api():
     script = textwrap.dedent(f'''
         import sys
         sys.path.insert(0, {SRC!r})
-        import zfh_voice
-        assert callable(zfh_voice.TTS), "TTS 未暴露"
-        assert callable(zfh_voice.SynthResult)
-        assert "TTS" in dir(zfh_voice)
+        import zfh_voice2
+        assert callable(zfh_voice2.TTS), "TTS 未暴露"
+        assert callable(zfh_voice2.SynthResult)
+        assert "TTS" in dir(zfh_voice2)
         try:
-            zfh_voice.NoSuchThing
+            zfh_voice2.NoSuchThing
         except AttributeError:
             pass
         else:
@@ -156,7 +156,7 @@ def test_doctor_survives_broken_find_spec():
         def boom(name, *a, **k):
             raise ImportError("simulated broken install: " + name)
         importlib.util.find_spec = boom
-        from zfh_voice.doctor import has_module
+        from zfh_voice2.doctor import has_module
         assert has_module("numpy") is False
         print("ROBUST-OK")
     ''')

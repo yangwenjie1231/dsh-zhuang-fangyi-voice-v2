@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""python -m zfh_voice 入口"""
+"""python -m zfh_voice2 入口"""
 import sys
 
 from .cli import main

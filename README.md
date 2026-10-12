@@ -1,4 +1,4 @@
-# dsh-zhuang-fangyi-voice
+# dsh-zhuang-fangyi-voice-v2
 
 > 庄方宜专属中文音色合成 for **DeepSeek Harness** —— 把任意中文台词用她的声音念出来。
 >
@@ -23,10 +23,10 @@
 最短路径（想自己动手）：
 
 ```bash
-python -m zfh_voice doctor        # ① 体检：一次拿到全部判断依据与建议
+python -m zfh_voice2 doctor        # ① 体检：一次拿到全部判断依据与建议
 pip install -r requirements.txt   # ② 装依赖（照体检建议，有 N 卡才加装 torch）
 python download_models.py         # ③ 下模型（默认 fp16，约 1.4GB，优先走魔搭）
-python -m zfh_voice say "今天天气不错"   # ④ 出声
+python -m zfh_voice2 say "今天天气不错"   # ④ 出声
 ```
 
 > `doctor` **不需要任何第三方依赖**就能跑（裸机器上也行）——
@@ -36,14 +36,56 @@ python -m zfh_voice say "今天天气不错"   # ④ 出声
 
 ---
 
+<!-- COEXIST-SECTION -->
+
+## 🔀 与 v0.1.0 **并存**（本版设计为可同时安装）
+
+本版**不与旧版冲突** —— 所有会撞车的标识都错开了，两版可以同时启用：
+
+| | v0.1.0 | **v0.2.0（本版）** |
+|---|---|---|
+| Loader 条目 id | `zhuang-fangyi-voice` | `zhuang-fangyi-voice-v2` |
+| npm 包名 | `dsh-zhuang-fangyi-voice` | `dsh-zhuang-fangyi-voice-v2` |
+| **宿主服务名** | `zfhVoice` | **`zfhVoiceV2`**（另挂短别名 `zfhVoice2`） |
+| HTTP 端口 | 8765 | **8766** |
+| Python 包 | `zfh_voice` | `zfh_voice2` |
+| CLI | `zfh-voice` | `zfh-voice2` |
+| 缓存目录 | `~/.cache/zfh-voice` | `~/.cache/zfh-voice2` |
+
+> **v0.2.0 不抢 `zfhVoice`** —— 那是 v0.1.0 的服务名，保持不变。
+> 桌宠等旧调用方**完全不受影响**；想用新版就取 `zfhVoiceV2`。
+
+### 桌宠怎么同时用两个
+
+```js
+const v1 = ctx.get('zfhVoice')       // 旧版（不变）
+const v2 = ctx.get('zfhVoiceV2')     // 新版（三种风格）
+
+const a = await v1.synthesize('你好')            // 旧版：正常语气
+const b = await v2.synthesize('你好', 'firm')    // 新版：强硬
+const c = await v2.synthesize('你好', 'gentle')  // 新版：娇
+```
+
+### 验证并存
+
+```bash
+python tests/verify_coexist.py         # 19 项静态检查
+python tests/verify_coexist.py --live  # 22 项，含**真实同时起两个服务**
+```
+
+`--live` 会真的在 8765 与 8766 各起一个服务并探测 `/health`，
+确认两者**同时存活**。
+
+---
+
 ## 它提供哪些用法
 
 | 方式 | 适用场景 | 命令/代码 |
 |---|---|---|
-| **命令行** | 快速生成几条 | `python -m zfh_voice say "台词"` |
-| **批量** | 一次生成一整批台词 | `python -m zfh_voice batch lines.txt -d out/` |
-| **Python API** | 嵌进别的 Python 程序 | `from zfh_voice import TTS` |
-| **HTTP 服务** | **桌宠等外部程序调用** | `python -m zfh_voice serve --port 8765` |
+| **命令行** | 快速生成几条 | `python -m zfh_voice2 say "台词"` |
+| **批量** | 一次生成一整批台词 | `python -m zfh_voice2 batch lines.txt -d out/` |
+| **Python API** | 嵌进别的 Python 程序 | `from zfh_voice2 import TTS` |
+| **HTTP 服务** | **桌宠等外部程序调用** | `python -m zfh_voice2 serve --port 8766` |
 | **合成缓存** | 相同台词秒回，不重复推理 | 自动，无需配置 |
 
 两种推理后端可切换：
@@ -85,17 +127,17 @@ python tools/install_styles.py
 
 ```bash
 # CLI（--style 是**全局参数**，要放在子命令前）
-python -m zfh_voice styles                          # 列出风格
-python -m zfh_voice --style firm say "你好"
-python -m zfh_voice --style gentle say "你好"
+python -m zfh_voice2 styles                          # 列出风格
+python -m zfh_voice2 --style firm say "你好"
+python -m zfh_voice2 --style gentle say "你好"
 
 # HTTP
-curl -X POST http://127.0.0.1:8765/tts \
+curl -X POST http://127.0.0.1:8766/tts \
      -H 'content-type: application/json' \
      -d '{"text":"你好","style":"firm"}' -o out.wav
 
 # DSH 服务（桌宠）
-const v = ctx.get('zfhVoice')
+const v = ctx.get('zfhVoiceV2')
 const r = await v.synthesize('你好', 'firm')   // 不传第二个参数 = 用配置的风格
 await v.setStyle('gentle')                     // 运行时切换
 const list = await v.styles()                  // 列出可用风格
@@ -154,19 +196,19 @@ v0.1.0 需要**在 DSH patch 里手写绝对路径**（`modelDir` / `python` / `
 
 1. `ZFH_MODEL_DIR` 环境变量
 2. `<仓库>/models`
-3. `~/.cache/zfh-voice/models`
+3. `~/.cache/zfh-voice2/models`
 4. **自动探测**（新增）：
    - `ZFH_MODELS_ROOT` 环境变量指定的根
    - `<仓库上两级>/zfh-models*`（**优先 `v2pro`**）
    - `<仓库上两级>/<voiceclone|voice|models|zfy|...>/zfh-models*`
-   - `~/.zfh-models` / `~/.zfh-voice/models`
+   - `~/.zfh-models` / `~/.zfh-voice2/models`
 
 例：仓库在 `D:\A\dsh-zhuang-fangyi-voice-v2`，
 自动找到 `D:\A\voiceclone\zfh-models-v2pro`。
 
 ```bash
 # 不传 --model-dir 也能跑
-python -m zfh_voice --backend torch --style firm say "你好"
+python -m zfh_voice2 --backend torch --style firm say "你好"
 ```
 
 ---
@@ -175,7 +217,7 @@ python -m zfh_voice --backend torch --style firm say "你好"
 
 | 层面 | 承诺 |
 |---|---|
-| `ctx.get('zfhVoice')` | 方法**签名与返回结构不变**（新增 `styles()` / `setStyle()` 为增量） |
+| `ctx.get('zfhVoiceV2')` | 方法**签名与返回结构不变**（新增 `styles()` / `setStyle()` 为增量） |
 | HTTP | `/health` `/tts` `/unload` `/voices` **原样保留** |
 | 配置 | `cordis.patch.yml` 原有字段**全部继续可用** |
 | CLI | 原有 8 个子命令**继续可用** |
@@ -193,14 +235,14 @@ python tests/verify_styles_e2e.py # 三种风格端到端
 ## 快速开始
 
 ```bash
-git clone https://github.com/yangwenjie1231/dsh-zhuang-fangyi-voice
-cd dsh-zhuang-fangyi-voice
+git clone https://github.com/yangwenjie1231/dsh-zhuang-fangyi-voice-v2
+cd dsh-zhuang-fangyi-voice-v2
 
 pip install -r requirements.txt
 python download_models.py            # 下载模型（约 1.4GB）
 
-python -m zfh_voice status           # 确认模型就绪
-python -m zfh_voice say "今天天气不错，我们一起出去走走吧。"
+python -m zfh_voice2 status           # 确认模型就绪
+python -m zfh_voice2 say "今天天气不错，我们一起出去走走吧。"
 ```
 
 输出默认落在 `out/out.wav`。
@@ -211,8 +253,8 @@ python -m zfh_voice say "今天天气不错，我们一起出去走走吧。"
 
 | 源 | 印尼 |
 |---|---|
-| ModelScope | `https://modelscope.cn/models/yangwenjie1231/dsh-zhuang-fangyi-voice` |
-| GitHub | `https://github.com/yangwenjie1231/dsh-zhuang-fangyi-voice/releases` |
+| ModelScope | `https://modelscope.cn/models/yangwenjie1231/dsh-zhuang-fangyi-voice-v2` |
+| GitHub | `https://github.com/yangwenjie1231/dsh-zhuang-fangyi-voice-v2/releases` |
 
 也可手动指定：`python download_models.py --source github`。
 
@@ -232,7 +274,7 @@ pip install torch torchaudio
 git clone https://github.com/RVC-Boss/GPT-SoVITS third_party/GPT-SoVITS
 
 # 权重已下到 models/torch_weights/，后端会自动找到；也可用 gpt_path/sovits_path 指定
-python -m zfh_voice --backend torch \
+python -m zfh_voice2 --backend torch \
     --gsv-root third_party/GPT-SoVITS say "今天天气不错。"
 ```
 
@@ -250,7 +292,7 @@ python -m zfh_voice --backend torch \
 ## HTTP 服务（桌宠对接用）
 
 ```bash
-python -m zfh_voice serve --host 127.0.0.1 --port 8765
+python -m zfh_voice2 serve --host 127.0.0.1 --port 8766
 ```
 
 | 方法 | 路径 | 说明 |
@@ -265,7 +307,7 @@ python -m zfh_voice serve --host 127.0.0.1 --port 8765
 示例：
 
 ```bash
-curl -X POST http://127.0.0.1:8765/tts \
+curl -X POST http://127.0.0.1:8766/tts \
      -H "Content-Type: application/json" \
      -d '{"text":"管理员，今天的实验数据我已经整理好了。"}' \
      -o reply.wav
@@ -358,7 +400,7 @@ tts.say("这个功能叫 Hello World，很简单。", localize=True)
 | `今天的实验数据我已经整理好了。` | 中文完整 | — |
 
 ```bash
-python -m zfh_voice say "GPU 和 AI 都很重要。"
+python -m zfh_voice2 say "GPU 和 AI 都很重要。"
 # 3.40s  ->  out/out.wav
 ```
 
@@ -379,7 +421,7 @@ python -m zfh_voice say "GPU 和 AI 都很重要。"
    - `"auto"` → 混排可用时**原样送**（真英文发音）；不可用时自动转中文读法兜底
    - `True` → 总是转中文读法（`GPU`→`基皮尤`）—— 纯离线、零 nltk 依赖
    - `False` → 总是不转
-2. 转换实现见 [src/zfh_voice/textprep.py](src/zfh_voice/textprep.py)（词表可自行扩充）
+2. 转换实现见 [src/zfh_voice2/textprep.py](src/zfh_voice2/textprep.py)（词表可自行扩充）
 
 ### 踩过的坑（供参考）
 
@@ -405,10 +447,10 @@ python -m zfh_voice say "GPU 和 AI 都很重要。"
 
 | 想要什么 | 怎么做 |
 |---|---|
-| 一直占着，合成立刻开始 | 桌宠设置页打开「让语音模型常驻」，或 `zfhVoice.setResident(true)` |
+| 一直占着，合成立刻开始 | 桌宠设置页打开「让语音模型常驻」，或 `zfhVoiceV2.setResident(true)` |
 | 空闲后释放显存 | 关掉常驻，设「空闲多少秒后释放」（默认 300s） |
 | **释放的彻底程度** | `idleAction`：`stop` 杀进程（全释放、恢复慢）/ `unload` 只卸模型留进程（**显存同样释放、恢复快**） |
-| 现在到底占不占显存 | `zfhVoice.status().modelLoaded`（`true`/`false`/`null`=未知） |
+| 现在到底占不占显存 | `zfhVoiceV2.status().modelLoaded`（`true`/`false`/`null`=未知） |
 
 > ⚠️ **`status().resident` 是"配置意图"，`modelLoaded` 才是"真实状态"。**
 > 配了常驻但服务刚起、模型还在加载时，前者 `true`、后者 `false`。
@@ -418,13 +460,13 @@ python -m zfh_voice say "GPU 和 AI 都很重要。"
 
 ```bash
 # 一直常驻（默认）：模型不释放，响应最快
-python -m zfh_voice serve
+python -m zfh_voice2 serve
 
 # 空闲 300 秒后自动释放模型，腾出显存；下次请求按需重载
-python -m zfh_voice serve --idle-timeout 300
+python -m zfh_voice2 serve --idle-timeout 300
 
 # 启动时不预热，把加载推迟到首次请求
-python -m zfh_voice serve --no-preload
+python -m zfh_voice2 serve --no-preload
 ```
 
 > 插件模式下**不会**传 `--idle-timeout`，策略完全由插件决定 ——
@@ -433,10 +475,10 @@ python -m zfh_voice serve --no-preload
 查看当前是否常驻：
 
 ```bash
-curl http://127.0.0.1:8765/health
+curl http://127.0.0.1:8766/health
 # {"ok":true, ..., "resident":true, "idle_seconds":3.2, "loads":1, "unloads":0}
 
-curl -X POST http://127.0.0.1:8765/unload    # 立刻释放模型（保留进程）
+curl -X POST http://127.0.0.1:8766/unload    # 立刻释放模型（保留进程）
 ```
 
 > 有请求在途时**绝不会释放模型**（长合成可能远超 `idle-timeout`）。
@@ -458,13 +500,13 @@ GPT-SoVITS 的 AR 解码**不传 seed 时每次采样都不同**，而且**句�
 
 ```bash
 # 默认：固定 42
-python -m zfh_voice say "让我想想"
+python -m zfh_voice2 say "让我想想"
 
 # 显式指定别的种子
-python -m zfh_voice --seed 7 say "让我想想"
+python -m zfh_voice2 --seed 7 say "让我想想"
 
 # 恢复上游的随机采样（**不推荐**，短句会不稳）
-python -m zfh_voice --random-seed say "让我想想"
+python -m zfh_voice2 --random-seed say "让我想想"
 ```
 
 > **诚实说明**：固定种子后**时长**是 100% 可复现的，但波形仍有约 **−51 dB**
@@ -485,13 +527,13 @@ python -m zfh_voice --random-seed say "让我想想"
 
 ```bash
 # 默认 auto：按模型版本自动选校准值（v2 → 3，v2Pro → 0）
-python -m zfh_voice say "你好"
+python -m zfh_voice2 say "你好"
 
 # 显式指定（覆盖 auto）
-python -m zfh_voice --brightness-db 3 say "你好"
+python -m zfh_voice2 --brightness-db 3 say "你好"
 
 # 显式关闭（与 auto 语义不同：0 = 一定不动输出）
-python -m zfh_voice --brightness-db 0 say "你好"
+python -m zfh_voice2 --brightness-db 0 say "你好"
 ```
 
 插件配置里是 `brightnessDb`，默认 `'auto'`（也可填 0~12 的数字）。
@@ -544,13 +586,13 @@ python -m zfh_voice --brightness-db 0 say "你好"
 CLI 每次运行都是新进程，会重新加载模型。让它走已在运行的服务即可：
 
 ```bash
-python -m zfh_voice say "今天天气不错。" --server
+python -m zfh_voice2 say "今天天气不错。" --server
 # 或指定地址 / 批量
-python -m zfh_voice say "..." --server http://127.0.0.1:8765
-python -m zfh_voice batch lines.txt -d out/ --server
+python -m zfh_voice2 say "..." --server http://127.0.0.1:8766
+python -m zfh_voice2 batch lines.txt -d out/ --server
 ```
 
-`--server` 不带值（或 `--server auto`）会自动探测 `127.0.0.1:8765`，
+`--server` 不带值（或 `--server auto`）会自动探测 `127.0.0.1:8766`，
 探测不到则**回退到本地加载**，不会失败。
 
 实测对比（同一句话）：
@@ -565,7 +607,7 @@ python -m zfh_voice batch lines.txt -d out/ --server
 ## Python API
 
 ```python
-from zfh_voice import TTS
+from zfh_voice2 import TTS
 
 tts = TTS()                       # 默认 onnx 后端
 r = tts.say("管理员，今天的实验数据我已经整理好了。")
@@ -595,7 +637,7 @@ config:
 
 1. 环境变量 `ZFH_MODEL_DIR`
 2. 仓库下的 `models/`
-3. `~/.cache/zfh-voice/models`
+3. `~/.cache/zfh-voice2/models`
 
 ### 模型目录里该放什么
 
@@ -618,7 +660,7 @@ torch_weights/<任意名>-e<N>.ckpt        + <任意名>_e<N>_s<N>.pth    # 自�
 不确定缺什么就跑体检，它会明确列出：
 
 ```bash
-python -m zfh_voice status
+python -m zfh_voice2 status
 # 缺 sv_after_fbank.onnx  (v2Pro 的说话人编码器)
 ```
 
@@ -658,7 +700,7 @@ tts = TTS(ref_wav="my_ref.wav", ref_text="这段音频里说的那句话")
 
 本仓库除了是 Python 库，**也是一个 DSH 插件**：`index.js` 是它的宿主半边，
 负责托管推理服务的进程（启动/保活/空闲释放显存），并把合成能力挂成宿主服务
-**`zfhVoice`** —— 桌宠插件用它把 AI 的回答念出来。
+**`zfhVoiceV2`** —— 桌宠插件用它把 AI 的回答念出来。
 
 ```powershell
 # 1) 装 Python 依赖与模型（见「快速开始」）
@@ -667,7 +709,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\install-dsh-plugin.ps1
 # 3) 重启 DSH（ESM 模块有缓存，disable→enable 对入口文件不够）
 ```
 
-装好后宿主日志会出现「庄方宜语音：已挂载 zfhVoice 服务」。
+装好后宿主日志会出现「庄方宜语音：已挂载 zfhVoiceV2 服务」。
 **若环境还没配好，日志会紧跟一段可照做的指引**（缺什么 + 敲什么命令），
 不必去翻源码猜。
 
@@ -706,7 +748,7 @@ Claude Code / Cursor / DSH 自己，它会按步骤配好环境（含每一步�
 | `backend` | `auto` | `auto` / `torch`（快，占显存）/ `onnx`（慢，省显存） |
 | `gsvRoot` | 自动 | GPT-SoVITS 检出目录（torch 后端需要） |
 | `modelDir` | 自动 | 等价 `ZFH_MODEL_DIR` |
-| `host` / `port` | `127.0.0.1` / `8765` | 本地 HTTP 服务 |
+| `host` / `port` | `127.0.0.1` / `8766` | 本地 HTTP 服务 |
 | `resident` | `false` | **常驻**：一直占显存但合成立刻开始；关闭则空闲后释放 |
 | `idleStopSec` | `300` | 非常驻时空闲多久释放（0 = 不释放） |
 | `idleAction` | `stop` | 释放方式：`stop` 杀进程（全释放）/ `unload` 只卸模型（显存同样释放、恢复快） |
@@ -714,7 +756,7 @@ Claude Code / Cursor / DSH 自己，它会按步骤配好环境（含每一步�
 
 ### 三条纪律（有测试盯着）
 
-- **只停自己起的**：用户在终端手动 `python -m zfh_voice serve` 时，
+- **只停自己起的**：用户在终端手动 `python -m zfh_voice2 serve` 时，
   插件只连接、绝不终止；
 - **秒退不重启**：依赖没装/模型缺失时自动重启会变成重启风暴 ——
   10 秒内退出只记错误，等用户显式操作；
@@ -731,13 +773,13 @@ Claude Code / Cursor / DSH 自己，它会按步骤配好环境（含每一步�
 桌宠侧只需调用 HTTP 接口，无需关心本仓库的实现细节：
 
 ```
-桌宠 → POST http://127.0.0.1:8765/tts {"text": "..."} → audio/wav → 播放
+桌宠 → POST http://127.0.0.1:8766/tts {"text": "..."} → audio/wav → 播放
 ```
 
 若不想常驻服务，也可以直接调 CLI 生成到文件后播放：
 
 ```bash
-python -m zfh_voice say "台词" -o cache/line.wav
+python -m zfh_voice2 say "台词" -o cache/line.wav
 ```
 
 固定台词建议走 CLI + 缓存，临时台词走 HTTP。
@@ -773,12 +815,12 @@ python -m zfh_voice say "台词" -o cache/line.wav
 
 ## 故障排查
 
-**第一步永远是 `python -m zfh_voice doctor`** —— 它不需要任何依赖就能跑，
+**第一步永远是 `python -m zfh_voice2 doctor`** —— 它不需要任何依赖就能跑，
 会直接告诉你缺什么、该敲什么命令。
 
 | 现象 | 原因与处理 |
 |---|---|
-| 不知道缺什么 | `python -m zfh_voice doctor`（人看）/ `doctor --json out.json`（程序读） |
+| 不知道缺什么 | `python -m zfh_voice2 doctor`（人看）/ `doctor --json out.json`（程序读） |
 | 插件日志说「环境还没配好 —— 缺 Python 依赖」 | 照日志给的命令 `pip install -r requirements.txt` |
 | 插件日志说「模型还没下载」 | `python download_models.py` |
 | 插件日志说「找不到 python 解释器」 | 装 Python 3.9+，或设 `ZFH_VOICE_PYTHON`，或填插件配置 `python` |

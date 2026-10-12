@@ -16,7 +16,7 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "src"))
 
-from zfh_voice import paths  # noqa: E402
+from zfh_voice2 import paths  # noqa: E402
 
 
 def _touch(p):

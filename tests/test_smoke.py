@@ -14,8 +14,8 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "src"))
 
-from zfh_voice import model_status, resolve_model_dir  # noqa: E402
-from zfh_voice.paths import ONNX_FILES  # noqa: E402
+from zfh_voice2 import model_status, resolve_model_dir  # noqa: E402
+from zfh_voice2.paths import ONNX_FILES  # noqa: E402
 
 
 def _models_ready():
@@ -66,7 +66,7 @@ def test_resolve_model_dir():
 
 @requires_models
 def test_synth_short_text():
-    from zfh_voice import TTS
+    from zfh_voice2 import TTS
 
     tts = TTS()
     try:
@@ -80,7 +80,7 @@ def test_synth_short_text():
 
 @requires_models
 def test_cache_hit_is_fast(tmp_path):
-    from zfh_voice import TTS
+    from zfh_voice2 import TTS
 
     # 用独立缓存目录，避免被上一次运行的残留缓存干扰
     # （否则第一次 say 就直接命中，断言 not r1.cached 会假失败）

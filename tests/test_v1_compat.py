@@ -52,8 +52,8 @@ def main() -> int:
     c = json.loads(CONTRACT.read_text(encoding="utf-8"))
 
     idx = (ROOT / "index.js").read_text(encoding="utf-8")
-    srv = (ROOT / "src" / "zfh_voice" / "server.py").read_text(encoding="utf-8")
-    cli = (ROOT / "src" / "zfh_voice" / "cli.py").read_text(encoding="utf-8")
+    srv = (ROOT / "src" / "zfh_voice2" / "server.py").read_text(encoding="utf-8")
+    cli = (ROOT / "src" / "zfh_voice2" / "cli.py").read_text(encoding="utf-8")
     pkg = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
 
     # ---------- ① JS 服务方法 ----------
@@ -105,7 +105,7 @@ def main() -> int:
     # ---------- ⑤ 默认风格 = normal，参考音频 = default.wav ----------
     print()
     print("⑤ 默认行为（关键：不指定风格时与 v1 一致）")
-    from zfh_voice import styles  # noqa: E402
+    from zfh_voice2 import styles  # noqa: E402
 
     check("DEFAULT_STYLE == 'normal'", styles.DEFAULT_STYLE == "normal",
           styles.DEFAULT_STYLE)
@@ -119,7 +119,7 @@ def main() -> int:
     # 有真实模型目录时，验证 normal 解析到 default.wav 或 styles/normal.wav
     md = None
     try:
-        from zfh_voice import paths  # noqa: E402
+        from zfh_voice2 import paths  # noqa: E402
         md = paths.resolve_model_dir(must_exist=False)
     except Exception:
         pass

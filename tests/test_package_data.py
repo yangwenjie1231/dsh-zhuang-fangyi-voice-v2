@@ -17,7 +17,7 @@ import glob
 import os
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-VENDOR = os.path.join(REPO, "src", "zfh_voice", "_vendor")
+VENDOR = os.path.join(REPO, "src", "zfh_voice2", "_vendor")
 
 # 必须随包分发、缺了就静默降级的关键文件
 REQUIRED = [
@@ -33,10 +33,10 @@ REQUIRED = [
 
 
 def _package_data_globs():
-    """从 pyproject.toml 读 package-data["zfh_voice"]。
+    """从 pyproject.toml 读 package-data["zfh_voice2"]。
 
     不依赖 tomllib（py3.11+ 才有），手写一个够用的解析：
-    只取 `[tool.setuptools.package-data]` 段里 `"zfh_voice" = [ ... ]` 的字符串。
+    只取 `[tool.setuptools.package-data]` 段里 `"zfh_voice2" = [ ... ]` 的字符串。
     """
     path = os.path.join(REPO, "pyproject.toml")
     with open(path, encoding="utf-8") as f:
@@ -54,7 +54,7 @@ def _package_data_globs():
         if not in_section:
             continue
         if not in_list:
-            if s.startswith('"zfh_voice"') and "[" in s:
+            if s.startswith('"zfh_voice2"') and "[" in s:
                 in_list = True
                 rest = s.split("[", 1)[1]
                 if rest.strip().startswith('"'):
@@ -77,10 +77,10 @@ def test_package_data_is_parseable():
 def test_required_files_match_package_data():
     """每个必需文件都要被至少一条 package-data 规则覆盖"""
     globs = _package_data_globs()
-    src_root = os.path.join(REPO, "src", "zfh_voice")
+    src_root = os.path.join(REPO, "src", "zfh_voice2")
     missing = []
     for rel in REQUIRED:
-        abs_p = os.path.join(REPO, "src", "zfh_voice", rel.replace("/", os.sep))
+        abs_p = os.path.join(REPO, "src", "zfh_voice2", rel.replace("/", os.sep))
         if not os.path.exists(abs_p):
             missing.append(f"{rel}  (源码树里就不存在)")
             continue
@@ -106,7 +106,7 @@ def test_required_files_match_package_data():
 def test_extensionless_cmudict_is_covered():
     """专门的回归：`corpora/cmudict/cmudict` 没有扩展名，曾被漏掉"""
     globs = _package_data_globs()
-    src_root = os.path.join(REPO, "src", "zfh_voice")
+    src_root = os.path.join(REPO, "src", "zfh_voice2")
     target = os.path.abspath(
         os.path.join(src_root, "_vendor", "nltk_data", "corpora", "cmudict", "cmudict"))
     assert os.path.exists(target), "源码树里缺 cmudict，先修数据"

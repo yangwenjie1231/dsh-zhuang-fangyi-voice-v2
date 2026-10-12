@@ -26,8 +26,8 @@ import zipfile
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 # ---- 下载源（按顺序尝试）----
-MS_REPO = "yangwenjie1231/dsh-zhuang-fangyi-voice"
-GH_REPO = "yangwenjie1231/dsh-zhuang-fangyi-voice"
+MS_REPO = "yangwenjie1231/dsh-zhuang-fangyi-voice-v2"
+GH_REPO = "yangwenjie1231/dsh-zhuang-fangyi-voice-v2"
 GH_TAG = "models-v1"
 
 SOURCES = {
@@ -187,7 +187,7 @@ def main():
     # 1) 辅助文件包（小）
     if not aux_ok or not ref_ok:
         z = os.path.join(d, "_aux.zip")
-        if fetch("zfh-voice-aux.zip", z, 2, order):
+        if fetch("zfh-voice2-aux.zip", z, 2, order):
             print("  解压辅助文件 ...")
             with zipfile.ZipFile(z) as f:
                 f.extractall(d)
@@ -279,12 +279,12 @@ def main():
     else:
         if a.torch_only:
             print("\ntorch 模式就绪。使用方式：")
-            print("  python -m zfh_voice --backend torch \\")
+            print("  python -m zfh_voice2 --backend torch \\")
             print("      --gsv-root <GPT-SoVITS 检出目录> say \"今天天气不错\"")
             print(f"\n权重位于 {torch_dir}\\，torch 后端会自动在此查找。")
         else:
             print("\n全部就绪。可以用了：")
-            print('  python -m zfh_voice say "今天天气不错"')
+            print('  python -m zfh_voice2 say "今天天气不错"')
             if a.with_torch:
                 print("\ntorch 权重已下到 torch_weights/，torch 后端会自动查找；")
                 print("也可用 --backend torch --gsv-root <目录> 手动指定。")

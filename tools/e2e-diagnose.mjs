@@ -92,7 +92,7 @@ function launchFor (python, modelDir) {
     backend: 'onnx',
     modelDir: modelDir ?? '',
     host: '127.0.0.1',
-    port: 8765
+    port: 8766
   })
 }
 
@@ -176,7 +176,7 @@ await okAsync('⭐ 探测失败时返回 ran:false 而不是抛', async () => {
 
 ok('指引在这种情况下也给出下一步（不空着）', () => {
   const g = formatSetupGuidance({ ran: false, ok: null, error: 'timeout-no-report' })
-  assert.ok(g.includes('python -m zfh_voice doctor'), g)
+  assert.ok(g.includes('python -m zfh_voice2 doctor'), g)
 })
 
 /* ── 4. 命令组装 ──────────────────────────────────────────────────────── */
@@ -191,7 +191,7 @@ ok('doctor 命令复用同一个 python 与全局参数（顺序不能错）', (
   const { argv } = (() => {
     const i = launch.argv.indexOf('serve')
     const globals = launch.argv.slice(1, i)
-    return { argv: ['PY', '-m', 'zfh_voice', ...globals, 'doctor', '--json', 'X'] }
+    return { argv: ['PY', '-m', 'zfh_voice2', ...globals, 'doctor', '--json', 'X'] }
   })()
   const iDoctor = argv.indexOf('doctor')
   assert.ok(argv.indexOf('--model-dir') < iDoctor, '全局参数必须在 doctor 前')

@@ -2,7 +2,7 @@
 """环境体检：把「该装哪套模型」所需的判断依据一次性收集出来
 
 用途：
-  - 人：`python -m zfh_voice doctor`  看看自己该装什么
+  - 人：`python -m zfh_voice2 doctor`  看看自己该装什么
   - agent：安装时先跑这个，再据此决定装 onnx / torch、哪种精度
 
 输出为纯文本，人机皆可读。不修改任何东西。
@@ -186,7 +186,7 @@ def format_report(info):
     L = []
     A = L.append
     A("=" * 66)
-    A("zfh-voice 环境体检")
+    A("zfh-voice2 环境体检")
     A("=" * 66)
     A(f"Python      : {info['python']}  ({info['executable']})")
     A(f"系统        : {info['platform']}")
@@ -244,8 +244,8 @@ def format_report(info):
     if not inst["torch_ok"]:
         A("  python download_models.py --with-torch        # 追加 torch 权重")
         A("  python download_models.py --torch-only        # 只要 torch，跳过 ONNX")
-    A("  python -m zfh_voice status           # 确认就绪")
-    A('  python -m zfh_voice say "今天天气不错"   # 冒烟测试')
+    A("  python -m zfh_voice2 status           # 确认就绪")
+    A('  python -m zfh_voice2 say "今天天气不错"   # 冒烟测试')
     return "\n".join(L)
 
 

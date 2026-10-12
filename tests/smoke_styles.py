@@ -6,7 +6,7 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from zfh_voice import styles  # noqa: E402
+from zfh_voice2 import styles  # noqa: E402
 
 print("=" * 80)
 print("styles 模块冒烟测试")
