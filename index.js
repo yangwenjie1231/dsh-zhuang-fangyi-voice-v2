@@ -219,6 +219,10 @@ export function buildServeCommand (o = {}) {
   if (gsv !== '') argv.push('--gsv-root', gsv)
   const model = String(o.modelDir ?? '').trim()
   if (model !== '') argv.push('--model-dir', model)
+  const gptPath = String(o.gptPath ?? '').trim()
+  if (gptPath !== '') argv.push('--gpt-path', gptPath)
+  const sovitsPath = String(o.sovitsPath ?? '').trim()
+  if (sovitsPath !== '') argv.push('--sovits-path', sovitsPath)
   // seed / brightnessDb 必须放在全局参数区（子命令之前），
   // 否则 argparse 会当成 `serve` 自己的参数而报错。
   const seed = o.seed
@@ -545,11 +549,14 @@ export function defaultConfig () {
     /** 本仓库目录。留空 = 插件自身目录。 */
     repoDir: '',
     /** 推理后端：`auto`（默认）/ `torch`（快，占显存）/ `onnx`（慢，省显存）。 */
-    backend: 'auto',
+    backend: 'torch',
     /** GPT-SoVITS 检出目录（torch 后端需要）。留空 = 交给 Python 侧找。 */
     gsvRoot: '',
     /** 模型目录（等价 ZFH_MODEL_DIR）。留空 = <repo>/models → ~/.cache。 */
     modelDir: '',
+    /** 显式 GPT / SoVITS 权重；SoVITS 留空时自动选 configuration.json 默认/e32。 */
+    gptPath: '',
+    sovitsPath: '',
     host: '127.0.0.1',
     port: 8766,
     /** 常驻：true = 一直占着（快）；false = 空闲后释放显存。 */
@@ -588,7 +595,7 @@ export function defaultConfig () {
 export function normalizeConfig (input, base = defaultConfig()) {
   const out = { ...base }
   if (input === null || typeof input !== 'object') return out
-  for (const key of ['python', 'repoDir', 'gsvRoot', 'modelDir']) {
+  for (const key of ['python', 'repoDir', 'gsvRoot', 'modelDir', 'gptPath', 'sovitsPath']) {
     if (typeof input[key] === 'string' && input[key].length <= 500) out[key] = input[key].trim()
   }
   if (input.backend === 'auto' || input.backend === 'torch' || input.backend === 'onnx') {
@@ -1074,6 +1081,8 @@ export function serveOptions (cfg, python, repoDir) {
     backend: cfg.backend,
     gsvRoot: cfg.gsvRoot,
     modelDir: cfg.modelDir,
+    gptPath: cfg.gptPath,
+    sovitsPath: cfg.sovitsPath,
     host: cfg.host,
     port: cfg.port,
     seed: cfg.seed,
@@ -1268,6 +1277,31 @@ export function apply (ctx, rawConfig) {
       }, 8000).catch(() => null)
       return { style: body?.style ?? want, applied: body?.ok === true }
     },
+    /** v5 模型列表（不加载 766MB 权重）。 */
+    async models () {
+      const body = await json(`${baseUrl}/models`, { method: 'GET' }, 8000).catch(() => null)
+      if (body?.ok === true && Array.isArray(body.models)) return body
+      return { models: [], current: null, model_dir: cfg.modelDir }
+    },
+
+    /** 切换 v5 SoVITS 权重：先让服务端校验并停旧模型，再持久化配置。 */
+    async setModel (idOrPath) {
+      const body = await json(`${baseUrl}/model`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ model: idOrPath })
+      }, 15000).catch(() => null)
+      if (body?.ok !== true) return { applied: false, error: body?.error ?? 'switch failed' }
+      const chosen = body.models?.find(m => m.selected)?.path ?? idOrPath
+      this.configure({ sovitsPath: chosen })
+      return { applied: true, ...body }
+    },
+
+    async rescanModels () {
+      const body = await json(`${baseUrl}/models/rescan`, { method: 'POST' }, 8000).catch(() => null)
+      return body?.ok === true ? body : { models: [], current: null }
+    },
+
     /** 健康检查（不启动服务）。 */
     health: () => client.health(),
 

@@ -98,19 +98,19 @@ def has_torch_weights(d, exp_name=None):
                 and os.path.exists(os.path.join(td, f"{exp_name}_e6_s186.pth"))):
             return True
 
+    import re
     try:
-        names = os.listdir(td)
+        files = [os.path.join(root, n) for root, _, names in os.walk(td)
+                 for n in names]
     except OSError:
         return False
-
-    import re
     has_gpt = any(
-        (n.endswith(".ckpt") and re.search(r"-e\d+\.ckpt$", n))
-        or n.endswith("s1v3.ckpt")
-        for n in names)
-    has_sovits = any(
-        n.endswith(".pth") and re.search(r"_e\d+_s\d+\.pth$", n)
-        for n in names)
+        (p.endswith(".ckpt") and re.search(r"-e\d+\.ckpt$", p))
+        or p.endswith("s1v3.ckpt") for p in files)
+    # v2 插件只认头为 07 的 GPT-SoVITS v5dev 权重。
+    from .models import inspect_v5_weight
+    has_sovits = any(inspect_v5_weight(p) is not None for p in files
+                     if p.endswith(".pth"))
     return bool(has_gpt and has_sovits)
 
 

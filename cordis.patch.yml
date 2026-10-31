@@ -12,7 +12,13 @@
       config:
         # 全部留空 = 自动：后端用子插件默认，python 从 PATH / .venv 找，
         # 仓库目录就是本插件自己的目录（插件知道自己装在哪，不需要绝对路径）。
-        backend: auto
+        # v0.3.0：本插件只支持 GPT-SoVITS v5dev，固定 torch。
+        # v2/v2Pro 请使用 dsh-zhuang-fangyi-voice（v1）。
+        backend: torch
+        # DSH 设置页会列出 modelDir 下所有 v5 权重（e8/e16/e24/e32），
+        # 用户选择后写入 sovitsPath；留空 = configuration.json 默认（e32）。
+        # sovitsPath: ''
+        # gptPath: ''
         # ---------- v0.2.0 新增：音色风格 ----------
         # 三种语气风格（同一音色，不同语气）：
         #   normal  正常说话（默认，与 v0.1.0 行为一致）
@@ -34,7 +40,7 @@
         #   2) <仓库>/models
         #   3) ~/.cache/zfh-voice2/models
         #   4) **自动探测** <仓库上两级>/zfh-models*（v2 新增）
-        #      例：D:\A\dsh-...-voice-v2 会找到 D:\A\voiceclone\zfh-models-v2pro
+        #      只把含 GPT-SoVITS v5dev 权重的目录当作 v2 模型目录
         # 想固定用某个目录时再显式填。
         # modelDir: ''
         # python: ''

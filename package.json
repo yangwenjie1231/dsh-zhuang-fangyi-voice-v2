@@ -1,6 +1,6 @@
 {
   "name": "dsh-zhuang-fangyi-voice-v2",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "庄方宜专属中文音色合成 for DeepSeek Harness —— 把任意中文台词用她的声音念出来，支持三种语气风格。DSH 插件这一半负责托管 Python 推理服务（生命周期/常驻/显存释放），并通过 `zfhVoiceV2` 服务把合成能力暴露给其它插件（桌宠用它念 AI 的回答）。",
   "keywords": [
     "deepseek-harness",

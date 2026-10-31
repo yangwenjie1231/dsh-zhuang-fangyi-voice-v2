@@ -35,6 +35,10 @@ def _build_tts(args):
         kw["gsv_root"] = args.gsv_root
         if args.device:
             kw["device"] = args.device
+        if getattr(args, "gpt_path", None):
+            kw["gpt_path"] = args.gpt_path
+        if getattr(args, "sovits_path", None):
+            kw["sovits_path"] = args.sovits_path
     # --random-seed 显式要求不固定种子（default_seed=None 会透传给后端）
     dseed = None if getattr(args, "random_seed", False) else 42
     # --brightness-db 不传 → None → 交给 TTS 走 "auto"（按模型版本选校准值）
@@ -274,8 +278,8 @@ def cmd_cache(args):
 def main(argv=None):
     ap = argparse.ArgumentParser(
         prog="zfh-voice2", description="庄方宜专属音色合成")
-    ap.add_argument("--backend", default="onnx", choices=["onnx", "torch"],
-                    help="推理后端（默认 onnx）")
+    ap.add_argument("--backend", default="torch", choices=["torch"],
+                    help="推理后端（v2 插件仅支持 GPT-SoVITS v5 torch）")
     ap.add_argument("--model-dir", default=None, help="模型目录")
     ap.add_argument("--ref", default=None, help="参考音频路径")
     ap.add_argument("--ref-text", default=None, help="参考音频对应文本")
@@ -306,6 +310,10 @@ def main(argv=None):
     ap.add_argument("--gsv-root", default=None,
                     help="GPT-SoVITS 检出目录（torch 后端需要）")
     ap.add_argument("--device", default=None, help="torch 后端设备: cuda/cpu")
+    ap.add_argument("--gpt-path", default=None,
+                    help="GPT/t2s 权重（默认 <模型目录>/torch_weights/zfh-e4.ckpt）")
+    ap.add_argument("--sovits-path", default=None,
+                    help="GPT-SoVITS v5 SoVITS 权重；不传=configuration.json 默认或最高 epoch")
     ap.add_argument("--outdir", default="out", help="默认输出目录")
 
     sub = ap.add_subparsers(dest="cmd", required=True)

@@ -1,5 +1,17 @@
 # 更新日志
 
+## 0.3.0
+
+**主题：只支持 GPT-SoVITS v5，并支持在 DSH 设置页选择权重**
+
+- v2 插件仅接受权重头 `07` 的 GPT-SoVITS v5dev 权重。
+- 自动递归扫描 `torch_weights/` 与 `torch_weights/sovits/`。
+- 新增 `GET /v2/models`、`POST /v2/model`、`POST /v2/models/rescan`。
+- 新增服务方法 `models()` / `setModel()` / `rescanModels()`。
+- 默认选中 `configuration.json` 的 `default_sovits`，否则最高 epoch（e32）。
+- 下载器改为新模型仓库 `dsh-zhuang-fangyi-voice-v2-model` 与 Release `model-v2-v5-fullft`。
+- `download_models.py --epoch 8|16|24|32` / `--all-epochs`。
+- **不兼容 v2/v2Pro**：旧模型请使用 v1 插件 `dsh-zhuang-fangyi-voice`。
 ## 0.2.0
 
 **主题：三种语气风格 + 路径自动探测 + API 版本化 + **与 0.1.0 并存****
@@ -71,3 +83,4 @@
 
 首个版本。托管 Python 推理服务的生命周期（起停 / 常驻 / 显存释放），
 并通过 `zfhVoiceV2` 服务把合成能力暴露给其它插件。
+

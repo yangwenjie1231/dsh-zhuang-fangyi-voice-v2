@@ -26,7 +26,7 @@
 """
 from .paths import resolve_model_dir, model_status  # noqa: F401
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __all__ = ["TTS", "SynthResult", "resolve_model_dir", "model_status"]
 
 # 惰性属性 → 实际模块（第一次访问时才 import）

@@ -22,7 +22,8 @@ from zfh_voice2 import paths  # noqa: E402
 def _touch(p):
     os.makedirs(os.path.dirname(p), exist_ok=True)
     with open(p, "wb") as f:
-        f.write(b"\0")
+        # v2 插件只认 GPT-SoVITS v5dev 权重头；夹具必须给出真实可识别内容。
+        f.write(b"07\0" if p.endswith(".pth") else b"\0")
 
 
 @pytest.fixture

@@ -160,6 +160,9 @@ def make_handler(tts, state=None):
                     "current": getattr(tts, "style", "normal"),
                     "styles": tts.list_styles(),
                 })
+            if path == "/models":
+                self._touch()
+                return self._send(200, {"ok": True, **tts.list_models()})
             if path == "/ref":
                 # v2 新增：当前参考音频摘要（诊断用）
                 self._touch()
@@ -184,6 +187,19 @@ def make_handler(tts, state=None):
                 self._touch()
                 n = tts.clear_cache()
                 return self._send(200, {"ok": True, "cleared": n})
+            if path == "/model":
+                self._touch()
+                req = self._read_json()
+                try:
+                    with lock:
+                        result = tts.set_model(req.get("model"))
+                except Exception as e:  # noqa: BLE001
+                    return self._send(400, {"ok": False,
+                                            "error": f"{type(e).__name__}: {e}"})
+                return self._send(200, {"ok": True, **result})
+            if path == "/models/rescan":
+                self._touch()
+                return self._send(200, {"ok": True, **tts.rescan_models()})
             if path == "/style":
                 # v2 新增：运行时切换风格（改服务端 TTS 实例的状态）
                 self._touch()

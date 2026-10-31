@@ -112,6 +112,7 @@ class TTS:
         self._gsv_root = (backend_kw or {}).get("gsv_root")
         self._backend_kw = backend_kw
         self._backend = None
+        self.selected_model = None
 
         # ---------- 音色风格（v2 新增，向后兼容）----------
         #
@@ -251,6 +252,36 @@ class TTS:
                 self._localize_reason = f"{type(exc).__name__}: {exc}"
                 self._localize_auto = True
         return self._localize_auto
+
+    # ---------- v5 模型选择 ----------
+    def list_models(self):
+        """扫描模型目录，列出可用 GPT-SoVITS v5dev 权重。"""
+        from . import models
+        rows = models.scan_v5_models(self.model_dir)
+        cur = (self.selected_model or {}).get("path")
+        if cur is None:
+            try:
+                cur = models.resolve_selected_model(
+                    self.model_dir, self._backend_kw.get("sovits_path")).path
+            except (FileNotFoundError, ValueError):
+                cur = None
+        return {
+            "models": [{**r.to_dict(), "selected": r.path == cur} for r in rows],
+            "current": cur,
+            "model_dir": self.model_dir,
+        }
+
+    def rescan_models(self):
+        return self.list_models()
+
+    def set_model(self, value):
+        """切换 SoVITS 权重。校验失败时保留原选择。"""
+        from . import models
+        row = models.resolve_selected_model(self.model_dir, value)
+        self.unload()
+        self._backend_kw["sovits_path"] = row.path
+        self.selected_model = row.to_dict()
+        return self.list_models()
 
     # ---------- 后端 ----------
     @property

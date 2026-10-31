@@ -115,12 +115,12 @@ class TorchBackend(SynthBackend):
         #    合成照常出声、听起来"也还行"，但根本不是指定的那个模型。
         #    这种静默错误极难发现，必须让显式指定的目录赢。
         tw = os.path.join(self.model_dir, "torch_weights") if self.model_dir else None
+        from ..models import resolve_selected_model
+        selected = resolve_selected_model(self.model_dir, sovits_path)
+        self.selected_model = selected.to_dict()
         gpt = gpt_path or (self._pick_weight(tw, f"{exp_name}-e4.ckpt",
-                                             r"-e\d+\.ckpt$") if tw else None) \
-            or os.path.join(self.gsv_root, "GPT_weights_v2", f"{exp_name}-e4.ckpt")
-        sov = sovits_path or (self._pick_weight(tw, f"{exp_name}_e6_s186.pth",
-                                                r"_e\d+_s\d+\.pth$") if tw else None) \
-            or os.path.join(self.gsv_root, "SoVITS_weights_v2", f"{exp_name}_e6_s186.pth")
+                                             r"-e\d+\.ckpt$") if tw else None)
+        sov = selected.path
         for p in (gpt, sov):
             if not os.path.exists(p):
                 raise BackendError(
@@ -138,7 +138,7 @@ class TorchBackend(SynthBackend):
 
         # 上游用相对路径，这里换成绝对路径副本
         cfg = {"custom": {
-            "device": device, "is_half": is_half, "version": "v2",
+            "device": device, "is_half": is_half, "version": "v5dev",
             "t2s_weights_path": gpt, "vits_weights_path": sov,
             "bert_base_path": bert, "cnhuhbert_base_path": hubert,
         }}
@@ -157,7 +157,11 @@ class TorchBackend(SynthBackend):
         try:
             self.model_version = str(self.tts.configs.version)
         except Exception:  # noqa: BLE001
-            self.model_version = "v2"
+            self.model_version = "v5dev"
+        if self.model_version != "v5dev":
+            raise BackendError(
+                f"v2 插件仅支持 GPT-SoVITS v5dev，实际为 {self.model_version}；"
+                "v2/v2Pro 请使用 dsh-zhuang-fangyi-voice v1。")
 
     def synth(self, text, ref_wav, ref_text, seed=None, verbose=False):
         import numpy as np

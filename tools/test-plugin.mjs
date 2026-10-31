@@ -186,9 +186,9 @@ ok('坏输入一律 0（不抛）', () => {
 
 section('5. 配置归一化')
 
-ok('默认：auto 后端 / 不常驻 / 全自动路径', () => {
+ok('默认：torch 后端（v5-only） / 不常驻 / 全自动路径', () => {
   const d = defaultConfig()
-  assert.equal(d.backend, 'auto')
+  assert.equal(d.backend, 'torch')
   assert.equal(d.resident, false)
   assert.equal(d.python, '')
   assert.equal(d.repoDir, '')
@@ -199,7 +199,7 @@ ok('非法值被挡（后端白名单 / 端口范围 / 非布尔）', () => {
   const c = normalizeConfig({
     backend: 'cuda', port: 99999, resident: 'yes', idleStopSec: -1, python: 'x'.repeat(999)
   })
-  assert.equal(c.backend, 'auto', '非法后端应回落 auto')
+  assert.equal(c.backend, 'torch', '非法后端应回落 torch')
   assert.equal(c.port, 8766, '端口越界应回落')
   assert.equal(c.resident, false, '非布尔不该被当成 true')
   assert.equal(c.idleStopSec, DEFAULT_IDLE_STOP_SEC, '负数应回落')
