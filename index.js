@@ -44,6 +44,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { createVoiceHandler, ROUTE_PREFIX as VOICE_ROUTE_PREFIX } from './src/voice_routes.js'
 
 /**
  * 子进程 stdio 的**唯一合法形状**（宿主 `SubprocessStdio` 契约，实测确认）：
@@ -1371,6 +1372,17 @@ export function apply (ctx, rawConfig) {
       return this.status()
     }
   }
+
+  // 设置面板的同源 JSON 路由。必须用嵌套 inject：apply 期 webServer 还没发布。
+  if (typeof ctx.inject === 'function') ctx.inject(['webServer'], scoped => {
+    const server = scoped.webServer
+    if (!server || typeof server.register !== 'function') return
+    const handler = createVoiceHandler(service, logger)
+    scoped.effect(
+      () => server.register({ kind: 'prefix', path: VOICE_ROUTE_PREFIX, handler }),
+      'zhuang-fangyi-voice-v2: settings routes'
+    )
+  })
 
   ctx.provide(SERVICE_NAME, service)
 

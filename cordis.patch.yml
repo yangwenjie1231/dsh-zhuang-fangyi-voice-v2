@@ -45,3 +45,6 @@
         # modelDir: ''
         # python: ''
         # gsvRoot: ''
+
+# 客户端设置面板：DSH 设置页 -> 庄方宜语音 v2
+# client.js 注册 settings.section，列出 v5 权重。
