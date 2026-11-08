@@ -1,5 +1,17 @@
 # 更新日志
 
+## 0.4.0
+
+**主题：适配 DeepSeek Harness 0.2.2-rc.1**
+
+- `package.json` 声明 `dsh.client.platform=web`、`./client` 与 `./locale/*.json`、`./icon`。
+- `index.js` 导出 `Config`（schemastery），行配置由宿主校验。
+- 设置面板改注册到 **`plugins.item`**（0.2.2 的正确入口），依赖 `slots` / `locale` / `configForms`。
+- 移除 0.1.x 时代自建的 `/api/zhuang-fangyi/voice` 路由；配置持久化改走 `configEditor`。
+- 新增 `locale/zh.json`、`locale/en.json` 的 `meta.title` / `meta.description`。
+- 新增 `icon.svg`（原创声波图标）。
+- 新增 `tests/test_dsh_022_contract.mjs` 守卫上述契约（15 项）。
+- `engines.dsh` 提升为 `>=0.2.2-0`。
 ## 0.3.0
 
 **主题：只支持 GPT-SoVITS v5，并支持在 DSH 设置页选择权重**
@@ -83,4 +95,5 @@
 
 首个版本。托管 Python 推理服务的生命周期（起停 / 常驻 / 显存释放），
 并通过 `zfhVoiceV2` 服务把合成能力暴露给其它插件。
+
 

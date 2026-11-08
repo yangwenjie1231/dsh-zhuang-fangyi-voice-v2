@@ -26,7 +26,7 @@
 """
 from .paths import resolve_model_dir, model_status  # noqa: F401
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __all__ = ["TTS", "SynthResult", "resolve_model_dir", "model_status"]
 
 # 惰性属性 → 实际模块（第一次访问时才 import）
@@ -50,3 +50,4 @@ def __getattr__(name):
 
 def __dir__():
     return sorted(set(list(globals()) + list(_LAZY)))
+

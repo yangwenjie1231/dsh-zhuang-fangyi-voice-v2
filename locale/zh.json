@@ -1,0 +1,8 @@
+{
+  "meta": {
+    "title": "庄方宜语音 v2",
+    "description": "GPT-SoVITS v5 语音合成，可在设置页选择 e8/e16/e24/e32 权重。"
+  },
+  "settings.section.title": "庄方宜语音 v2",
+  "settings.section.description": "GPT-SoVITS v5 · 选择要使用的 SoVITS 权重"
+}

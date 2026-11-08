@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zfh-voice2"
-version = "0.3.0"
+version = "0.4.0"
 description = "庄方宜专属中文音色推理（ONNX / torch 双后端）"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -58,3 +58,4 @@ where = ["src"]
     # 所以这里必须用 `**/*` 而不是只匹配 `*.json`。
     "_vendor/nltk_data/**/*",
 ]
+

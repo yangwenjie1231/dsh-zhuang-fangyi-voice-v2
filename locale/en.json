@@ -1,0 +1,8 @@
+{
+  "meta": {
+    "title": "Zhuang Fangyi voice v2",
+    "description": "GPT-SoVITS v5 speech synthesis with e8/e16/e24/e32 weight selection in Settings."
+  },
+  "settings.section.title": "Zhuang Fangyi voice v2",
+  "settings.section.description": "GPT-SoVITS v5 · choose a SoVITS weight"
+}

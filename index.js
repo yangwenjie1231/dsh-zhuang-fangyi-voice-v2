@@ -44,7 +44,6 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { createVoiceHandler, ROUTE_PREFIX as VOICE_ROUTE_PREFIX } from './src/voice_routes.js'
 
 /**
  * 子进程 stdio 的**唯一合法形状**（宿主 `SubprocessStdio` 契约，实测确认）：
@@ -1373,16 +1372,24 @@ export function apply (ctx, rawConfig) {
     }
   }
 
-  // 设置面板的同源 JSON 路由。必须用嵌套 inject：apply 期 webServer 还没发布。
-  if (typeof ctx.inject === 'function') ctx.inject(['webServer'], scoped => {
-    const server = scoped.webServer
-    if (!server || typeof server.register !== 'function') return
-    const handler = createVoiceHandler(service, logger)
-    scoped.effect(
-      () => server.register({ kind: 'prefix', path: VOICE_ROUTE_PREFIX, handler }),
-      'zhuang-fangyi-voice-v2: settings routes'
-    )
-  })
+  /**
+   * 0.2.2：配置必须经 configEditor 持久化，不能自己改写 profile 的 YAML。
+   * 设置面板选择权重后调用它，失败时如实返回而不是假装保存成功。
+   */
+  service.saveModelChoice = async function saveModelChoice (path) {
+    const entry = ctx.fiber?.entry
+    const editor = ctx.get?.('configEditor')
+    if (entry === undefined || editor === undefined) {
+      return { saved: false, error: 'configuration cannot be saved in this profile' }
+    }
+    try {
+      await editor.edit(entry, current => ({ ...current, sovitsPath: path }))
+      return { saved: true }
+    } catch (error) {
+      logger?.warn?.(`庄方宜语音：保存模型选择失败 ${error?.message ?? error}`)
+      return { saved: false, error: String(error?.message ?? error) }
+    }
+  }
 
   ctx.provide(SERVICE_NAME, service)
 
@@ -1399,5 +1406,7 @@ export function apply (ctx, rawConfig) {
     `resident=${cfg.resident}）`)
   return service
 }
+
+export { Config } from './src/config.js'
 
 export default { name, apply }
