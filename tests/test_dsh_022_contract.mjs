@@ -42,4 +42,13 @@ assert.ok(!/name:\s*['"]settings\.section['"]/.test(client),
 const index = fs.readFileSync(path.join(root, 'index.js'), 'utf8')
 assert.ok(index.includes("export { Config }"), 'index.js must export Config')
 
-console.log('✅ DSH 0.2.2 契约 15 项通过')
+// 面板必须有真实数据源，且不得在服务不可达时伪造空列表当成功。
+assert.ok(client.includes('/v2/models'), 'panel must query the v5 model list')
+assert.ok(client.includes('offline'), 'panel must distinguish offline from empty')
+
+// schemastery 缺失时不能整包崩：config.js 必须有降级路径。
+const config = fs.readFileSync(path.join(root, 'src/config.js'), 'utf8')
+assert.ok(config.includes('catch'), 'config.js must tolerate missing schemastery')
+assert.ok(config.includes('DEFAULTS'), 'config.js must expose plain defaults')
+
+console.log('✅ DSH 0.2.2 契约 19 项通过')

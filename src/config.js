@@ -6,37 +6,60 @@
  *   · 宿主不再注册 settings 命名空间；
  *   · 非 volatile 字段只在加载时读一次。
  *
- * `sovitsPath` / `gptPath` 是用户可选项，所以必须 volatile。
+ * `schemastery` 由宿主提供（peer dependency）。链接安装或精简部署里它可能
+ * 解析不到，此时**不能让整个插件加载失败** —— 退化成无 schema（宿主按普通
+ * 对象处理配置），其余功能照常工作。
  */
-import z from '@deepseek-ai/schemastery'
+let z = null
+try {
+  z = (await import('@deepseek-ai/schemastery')).default
+} catch {
+  z = null
+}
 
 /** 必须与 cordis.patch.yml 里的条目 id 逐字一致。 */
 export const ENTRY_ID = 'zhuang-fangyi-voice-v2'
 
-export const Config = z.object({
-  /** 推理后端：v2 插件只支持 torch（v5 无 ONNX 包）。 */
-  backend: z.union([z.const('torch'), z.const('auto')]).default('torch'),
-  /** GPT-SoVITS 检出目录（含 GPT_SoVITS/ 与 gsv-v5-pretrained）。 */
-  gsvRoot: z.string().default(''),
-  /** 模型目录；留空走自动探测。 */
-  modelDir: z.string().default(''),
-  /** GPT/t2s 权重；留空用 <modelDir>/torch_weights/zfh-e4.ckpt。 */
-  gptPath: z.string().default('').volatile(),
-  /** SoVITS 权重；留空用 configuration.json 默认或最高 epoch。 */
-  sovitsPath: z.string().default('').volatile(),
-  /** 音色风格：normal / firm / gentle。 */
-  style: z.union([
-    z.const('normal'), z.const('firm'), z.const('gentle')
-  ]).default('normal').volatile(),
-  /** 常驻与空闲释放。 */
-  resident: z.boolean().default(false).volatile(),
-  idleStopSec: z.number().default(300).volatile(),
-  idleAction: z.union([z.const('stop'), z.const('unload')]).default('stop').volatile(),
-  host: z.string().default('127.0.0.1'),
-  port: z.natural().max(65535).default(8766),
-  python: z.string().default(''),
-  seed: z.number().default(42).volatile(),
-  startTimeoutMs: z.natural().default(120000)
-})
+/** 没有 schemastery 时的普通默认值，字段集合与有 schema 时保持一致。 */
+export const DEFAULTS = {
+  backend: 'torch',
+  gsvRoot: '',
+  modelDir: '',
+  gptPath: '',
+  sovitsPath: '',
+  style: 'normal',
+  resident: false,
+  idleStopSec: 300,
+  idleAction: 'stop',
+  host: '127.0.0.1',
+  port: 8766,
+  python: '',
+  seed: 42,
+  startTimeoutMs: 120000
+}
+
+function build () {
+  if (z === null) return undefined
+  return z.object({
+    backend: z.union([z.const('torch'), z.const('auto')]).default('torch'),
+    gsvRoot: z.string().default(''),
+    modelDir: z.string().default(''),
+    gptPath: z.string().default('').volatile(),
+    sovitsPath: z.string().default('').volatile(),
+    style: z.union([
+      z.const('normal'), z.const('firm'), z.const('gentle')
+    ]).default('normal').volatile(),
+    resident: z.boolean().default(false).volatile(),
+    idleStopSec: z.number().default(300).volatile(),
+    idleAction: z.union([z.const('stop'), z.const('unload')]).default('stop').volatile(),
+    host: z.string().default('127.0.0.1'),
+    port: z.natural().max(65535).default(8766),
+    python: z.string().default(''),
+    seed: z.number().default(42).volatile(),
+    startTimeoutMs: z.natural().default(120000)
+  })
+}
+
+export const Config = build()
 
 export default Config
